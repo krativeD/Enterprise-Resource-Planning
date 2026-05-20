@@ -199,4 +199,40 @@ const QuotationPrint = React.forwardRef(({ quotation }, ref) => {
             <h4 style={{ fontSize: '14px', fontWeight: 'bold', color: '#1e3a8a', marginBottom: '8px' }}>
               NOTES:
             </h4>
-            <p style={{ fontSize: '12px', color
+            <p style={{ fontSize: '12px', color: '#666', lineHeight: '1.6' }}>{notes}</p>
+          </div>
+        )}
+        {terms && (
+          <div style={{ flex: 1 }}>
+            <h4 style={{ fontSize: '14px', fontWeight: 'bold', color: '#1e3a8a', marginBottom: '8px' }}>
+              TERMS & CONDITIONS:
+            </h4>
+            <div style={{ fontSize: '12px', color: '#666', lineHeight: '1.6', whiteSpace: 'pre-line' }}>
+              {terms}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Footer */}
+      <div style={{
+        borderTop: '2px solid #e5e7eb',
+        paddingTop: '20px',
+        textAlign: 'center',
+        fontSize: '11px',
+        color: '#999'
+      }}>
+        <p style={{ marginBottom: '5px' }}>
+          Thank you for choosing {company_name}
+        </p>
+        <p>
+          This is a computer-generated document. No signature required.
+        </p>
+      </div>
+    </div>
+  )
+})
+
+QuotationPrint.displayName = 'QuotationPrint'
+
+export default QuotationPrint
