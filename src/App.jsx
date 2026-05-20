@@ -6,6 +6,7 @@ import EmployeeManager from './modules/hr/pages/EmployeeManager'
 import JobScheduling from './modules/jobs/pages/JobScheduling'
 import ClientManagement from './modules/clients/pages/ClientManagement'
 import FinanceManagement from './modules/finance/pages/FinanceManagement'
+import ProcurementManagement from './modules/procurement/pages/ProcurementManagement'
 import './App.css'
 
 function App() {
@@ -49,85 +50,15 @@ function App() {
         </DashboardLayout>
       } />
       
-      {/* Placeholder routes for future modules */}
+      {/* Module 7 - Procurement & Supplier Management */}
       <Route path="/procurement" element={
         <DashboardLayout>
-          <div className="flex items-center justify-center h-96">
-            <div className="text-center">
-              <h2 className="text-2xl font-bold text-gray-600 mb-2">Procurement Module</h2>
-              <p className="text-gray-500">Coming soon...</p>
-            </div>
-          </div>
+          <ProcurementManagement />
         </DashboardLayout>
       } />
       
-      <Route path="/inventory" element={
-        <DashboardLayout>
-          <div className="flex items-center justify-center h-96">
-            <div className="text-center">
-              <h2 className="text-2xl font-bold text-gray-600 mb-2">Inventory & Warehouse</h2>
-              <p className="text-gray-500">Coming soon...</p>
-            </div>
-          </div>
-        </DashboardLayout>
-      } />
-      
-      <Route path="/assets" element={
-        <DashboardLayout>
-          <div className="flex items-center justify-center h-96">
-            <div className="text-center">
-              <h2 className="text-2xl font-bold text-gray-600 mb-2">Asset & Equipment Management</h2>
-              <p className="text-gray-500">Coming soon...</p>
-            </div>
-          </div>
-        </DashboardLayout>
-      } />
-      
-      <Route path="/fleet" element={
-        <DashboardLayout>
-          <div className="flex items-center justify-center h-96">
-            <div className="text-center">
-              <h2 className="text-2xl font-bold text-gray-600 mb-2">Fleet Management</h2>
-              <p className="text-gray-500">Coming soon...</p>
-            </div>
-          </div>
-        </DashboardLayout>
-      } />
-      
-      <Route path="/reports" element={
-        <DashboardLayout>
-          <div className="flex items-center justify-center h-96">
-            <div className="text-center">
-              <h2 className="text-2xl font-bold text-gray-600 mb-2">Reporting & Analytics</h2>
-              <p className="text-gray-500">Coming soon...</p>
-            </div>
-          </div>
-        </DashboardLayout>
-      } />
-      
-      <Route path="/mobile" element={
-        <DashboardLayout>
-          <div className="flex items-center justify-center h-96">
-            <div className="text-center">
-              <h2 className="text-2xl font-bold text-gray-600 mb-2">Mobile Cleaner App</h2>
-              <p className="text-gray-500">Coming soon...</p>
-            </div>
-          </div>
-        </DashboardLayout>
-      } />
-      
-      {/* Catch-all route */}
-      <Route path="*" element={
-        <DashboardLayout>
-          <div className="flex items-center justify-center h-96">
-            <div className="text-center">
-              <h2 className="text-6xl font-bold text-gray-300 mb-4">404</h2>
-              <p className="text-xl text-gray-600 mb-2">Page Not Found</p>
-              <p className="text-gray-500">The page you're looking for doesn't exist.</p>
-            </div>
-          </div>
-        </DashboardLayout>
-      } />
+      {/* Catch-all redirect */}
+      <Route path="*" element={<Navigate to="/dashboard" replace />} />
     </Routes>
   )
 }
