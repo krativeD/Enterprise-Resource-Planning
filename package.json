@@ -1,5 +1,5 @@
 {
-  "name": "ndanduleni-erp",
+  "name": "ndanduleni-cleaning-erp",
   "private": true,
   "version": "1.0.0",
   "type": "module",
@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "deploy": "wrangler pages deploy dist"
+    "pages:dev": "wrangler pages dev dist",
+    "pages:deploy": "wrangler pages deploy dist"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.3.4",
@@ -34,6 +35,7 @@
     "autoprefixer": "^10.4.17",
     "postcss": "^8.4.33",
     "tailwindcss": "^3.4.1",
-    "vite": "^5.0.12"
+    "vite": "^5.0.12",
+    "wrangler": "^3.0.0"
   }
 }
