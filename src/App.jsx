@@ -2,6 +2,7 @@ import React from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import DashboardLayout from './layouts/DashboardLayout'
 import Dashboard from './modules/dashboard/pages/Dashboard'
+import EmployeeManager from './modules/hr/pages/EmployeeManager'
 import './App.css'
 
 function App() {
@@ -11,6 +12,11 @@ function App() {
       <Route path="/dashboard" element={
         <DashboardLayout>
           <Dashboard />
+        </DashboardLayout>
+      } />
+      <Route path="/hr" element={
+        <DashboardLayout>
+          <EmployeeManager />
         </DashboardLayout>
       } />
     </Routes>
