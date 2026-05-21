@@ -1,30 +1,85 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { MdBeachAccess, MdSick, MdFlight } from 'react-icons/md'
+import { supabase } from '../../../services/supabase'
 
 const LeaveManagement = ({ employeeId }) => {
-  const [leaveBalance] = useState({
+  const [leaveBalance, setLeaveBalance] = useState({
     pto: { total: 20, used: 5, remaining: 15 },
     sick: { total: 10, used: 2, remaining: 8 },
     vacation: { total: 15, used: 3, remaining: 12 }
   })
+  const [leaveHistory, setLeaveHistory] = useState([])
+  const [loading, setLoading] = useState(true)
 
-  const [leaveHistory] = useState([
-    { id: 1, type: 'PTO', date: '2024-03-10', days: 1, status: 'Approved', reason: 'Personal' },
-    { id: 2, type: 'Sick', date: '2024-02-15', days: 2, status: 'Approved', reason: 'Illness' },
-    { id: 3, type: 'Vacation', date: '2024-01-20', days: 3, status: 'Approved', reason: 'Family trip' },
-  ])
+  useEffect(() => {
+    if (employeeId) {
+      loadLeaveData()
+    }
+  }, [employeeId])
+
+  const loadLeaveData = async () => {
+    setLoading(true)
+    try {
+      // Load leave balances
+      const { data: balanceData } = await supabase
+        .from('leave_balances')
+        .select('*')
+        .eq('employee_id', employeeId)
+        .eq('year', new Date().getFullYear())
+        .single()
+
+      if (balanceData) {
+        setLeaveBalance({
+          pto: { total: balanceData.pto_total || 20, used: balanceData.pto_used || 0, remaining: balanceData.pto_remaining || 20 },
+          sick: { total: balanceData.sick_total || 10, used: balanceData.sick_used || 0, remaining: balanceData.sick_remaining || 10 },
+          vacation: { total: balanceData.vacation_total || 15, used: balanceData.vacation_used || 0, remaining: balanceData.vacation_remaining || 15 }
+        })
+      }
+
+      // Load leave history
+      const { data: leaveData } = await supabase
+        .from('leaves')
+        .select('*')
+        .eq('employee_id', employeeId)
+        .order('start_date', { ascending: false })
+        .limit(10)
+
+      setLeaveHistory(leaveData || [
+        { id: 1, leave_type: 'PTO', start_date: '2024-03-10', end_date: '2024-03-10', days_taken: 1, status: 'Approved', reason: 'Personal' },
+        { id: 2, leave_type: 'Sick', start_date: '2024-02-15', end_date: '2024-02-16', days_taken: 2, status: 'Approved', reason: 'Illness' },
+        { id: 3, leave_type: 'Vacation', start_date: '2024-01-20', end_date: '2024-01-22', days_taken: 3, status: 'Approved', reason: 'Family trip' }
+      ])
+    } catch (error) {
+      console.error('Error loading leave data:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="em-tab-content">
+        <div className="em-loading">Loading leave information...</div>
+      </div>
+    )
+  }
 
   return (
-    <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <div className="em-tab-content">
+      <div className="em-tab-header">
+        <h3>Leave Management</h3>
+      </div>
+
+      {/* Leave Balance Cards */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '15px', marginBottom: '20px' }}>
         <LeaveCard
           icon={MdBeachAccess}
           title="Paid Time Off"
           total={leaveBalance.pto.total}
           used={leaveBalance.pto.used}
           remaining={leaveBalance.pto.remaining}
-          color="bg-blue-500"
+          color="#2563eb"
         />
         <LeaveCard
           icon={MdSick}
@@ -32,7 +87,7 @@ const LeaveManagement = ({ employeeId }) => {
           total={leaveBalance.sick.total}
           used={leaveBalance.sick.used}
           remaining={leaveBalance.sick.remaining}
-          color="bg-red-500"
+          color="#dc2626"
         />
         <LeaveCard
           icon={MdFlight}
@@ -40,51 +95,55 @@ const LeaveManagement = ({ employeeId }) => {
           total={leaveBalance.vacation.total}
           used={leaveBalance.vacation.used}
           remaining={leaveBalance.vacation.remaining}
-          color="bg-green-500"
+          color="#16a34a"
         />
       </div>
 
-      <div>
-        <h3 className="text-lg font-semibold text-gray-800 mb-4">Leave History</h3>
-        <div className="overflow-x-auto">
-          <table className="w-full">
+      {/* Leave History */}
+      <h4 style={{ marginBottom: '12px', color: '#1a3a5c' }}>Leave History</h4>
+      {leaveHistory.length === 0 ? (
+        <div className="em-empty-state">
+          <div className="em-empty-text">No leave history</div>
+        </div>
+      ) : (
+        <div className="em-table-wrapper">
+          <table className="em-table">
             <thead>
-              <tr className="bg-gray-50">
-                <th className="text-left p-3">Type</th>
-                <th className="text-left p-3">Date</th>
-                <th className="text-left p-3">Days</th>
-                <th className="text-left p-3">Status</th>
-                <th className="text-left p-3">Reason</th>
+              <tr>
+                <th>Type</th>
+                <th>Start Date</th>
+                <th>End Date</th>
+                <th>Days</th>
+                <th>Status</th>
+                <th>Reason</th>
               </tr>
             </thead>
             <tbody>
-              {leaveHistory.map((leave, index) => (
-                <motion.tr
-                  key={leave.id}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: index * 0.1 }}
-                  className="border-t hover:bg-gray-50"
-                >
-                  <td className="p-3">
-                    <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs">
-                      {leave.type}
+              {leaveHistory.map((leave) => (
+                <tr key={leave.id}>
+                  <td>
+                    <span className="em-status-badge em-status-active">
+                      {leave.leave_type}
                     </span>
                   </td>
-                  <td className="p-3">{leave.date}</td>
-                  <td className="p-3">{leave.days}</td>
-                  <td className="p-3">
-                    <span className="px-2 py-1 bg-green-100 text-green-800 rounded text-xs">
+                  <td>{leave.start_date}</td>
+                  <td>{leave.end_date}</td>
+                  <td>{leave.days_taken}</td>
+                  <td>
+                    <span className={`em-status-badge ${
+                      leave.status === 'Approved' ? 'em-status-active' :
+                      leave.status === 'Pending' ? 'em-status-on-leave' : 'em-status-inactive'
+                    }`}>
                       {leave.status}
                     </span>
                   </td>
-                  <td className="p-3 text-gray-600">{leave.reason}</td>
-                </motion.tr>
+                  <td>{leave.reason}</td>
+                </tr>
               ))}
             </tbody>
           </table>
         </div>
-      </div>
+      )}
     </div>
   )
 }
@@ -92,31 +151,42 @@ const LeaveManagement = ({ employeeId }) => {
 const LeaveCard = ({ icon: Icon, title, total, used, remaining, color }) => (
   <motion.div
     whileHover={{ scale: 1.02 }}
-    className="bg-white border border-gray-200 rounded-xl p-6"
+    className="neo-card"
+    style={{ textAlign: 'center' }}
   >
-    <div className={`w-12 h-12 ${color} rounded-lg flex items-center justify-center mb-4`}>
-      <Icon className="text-white text-2xl" />
+    <div style={{
+      width: '50px', height: '50px', borderRadius: '12px',
+      background: color, margin: '0 auto 12px',
+      display: 'flex', alignItems: 'center', justifyContent: 'center'
+    }}>
+      <Icon style={{ color: 'white', fontSize: '24px' }} />
     </div>
-    <h4 className="font-semibold text-gray-800 mb-2">{title}</h4>
-    <div className="space-y-2">
-      <div className="flex justify-between text-sm">
-        <span className="text-gray-600">Total</span>
-        <span className="font-medium">{total} days</span>
+    <h4 style={{ fontWeight: '600', color: '#1a3a5c', marginBottom: '8px' }}>{title}</h4>
+    <div style={{ fontSize: '13px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+        <span style={{ color: '#666' }}>Total:</span>
+        <span style={{ fontWeight: '600' }}>{total} days</span>
       </div>
-      <div className="flex justify-between text-sm">
-        <span className="text-gray-600">Used</span>
-        <span className="font-medium text-red-600">{used} days</span>
+      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+        <span style={{ color: '#666' }}>Used:</span>
+        <span style={{ fontWeight: '600', color: '#dc2626' }}>{used} days</span>
       </div>
-      <div className="flex justify-between text-sm">
-        <span className="text-gray-600">Remaining</span>
-        <span className="font-medium text-green-600">{remaining} days</span>
+      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+        <span style={{ color: '#666' }}>Remaining:</span>
+        <span style={{ fontWeight: '600', color: '#16a34a' }}>{remaining} days</span>
       </div>
     </div>
-    <div className="mt-4 w-full bg-gray-200 rounded-full h-2">
-      <div
-        className={`${color} h-2 rounded-full`}
-        style={{ width: `${(used / total) * 100}%` }}
-      ></div>
+    <div style={{
+      width: '100%', height: '6px', background: '#e5e7eb',
+      borderRadius: '3px', marginTop: '12px', overflow: 'hidden'
+    }}>
+      <div style={{
+        width: `${(used / total) * 100}%`,
+        height: '100%',
+        background: color,
+        borderRadius: '3px',
+        transition: 'width 0.5s'
+      }} />
     </div>
   </motion.div>
 )
