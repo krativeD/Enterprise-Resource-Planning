@@ -1,4 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Alumni+Sans+Pinstripe&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Roboto:wght@300;400;500;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -13,55 +15,559 @@
 
   body {
     font-family: 'Inter', sans-serif;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: #d8d8d8;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  #root {
     min-height: 100vh;
   }
 
-  /* Custom scrollbar */
+  /* Custom Scrollbar */
   ::-webkit-scrollbar {
-    width: 6px;
+    width: 8px;
+    height: 8px;
   }
 
   ::-webkit-scrollbar-track {
-    background: #f1f1f1;
+    background: #e8e8e8;
+    border-radius: 4px;
   }
 
   ::-webkit-scrollbar-thumb {
-    background: #888;
-    border-radius: 3px;
+    background: #2c5f9b;
+    border-radius: 4px;
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    background: #555;
+    background: #1e4a7a;
+  }
+
+  /* Selection Color */
+  ::selection {
+    background: #2c5f9b;
+    color: white;
   }
 }
 
 @layer components {
-  .neumorph-card {
-    @apply bg-gray-100 rounded-2xl shadow-neumorph transition-all duration-300;
+  /* ==================== NEO BUTTONS ==================== */
+  .neo-btn {
+    height: 32px;
+    padding: 0 16px;
+    border: none;
+    border-radius: 7px;
+    background: linear-gradient(to bottom, #4f8fd0, #2d5f98);
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow:
+      3px 3px 6px rgba(0, 0, 0, 0.35),
+      inset 1px 1px 2px rgba(255, 255, 255, 0.5);
+    transition: all 0.2s ease;
+    font-size: 13px;
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
   }
 
-  .neumorph-card:hover {
-    @apply shadow-neumorph-inset transform scale-[0.98];
+  .neo-btn:hover {
+    transform: translateY(1px);
+    box-shadow:
+      inset 3px 3px 6px rgba(0, 0, 0, 0.3),
+      inset -2px -2px 5px rgba(255, 255, 255, 0.5);
   }
 
+  .neo-btn:active {
+    transform: translateY(2px);
+  }
+
+  .neo-btn-green {
+    background: linear-gradient(to bottom, #2d8f4e, #1a5c32);
+  }
+
+  .neo-btn-red {
+    background: linear-gradient(to bottom, #e74c3c, #c0392b);
+  }
+
+  .neo-btn-orange {
+    background: linear-gradient(to bottom, #f39c12, #e67e22);
+  }
+
+  .neo-btn-purple {
+    background: linear-gradient(to bottom, #8e44ad, #6c3483);
+  }
+
+  /* ==================== NEO CARDS ==================== */
+  .neo-card {
+    background: #dce8f5;
+    border: 2px solid #2f77bb;
+    border-radius: 8px;
+    box-shadow:
+      4px 4px 8px rgba(0, 0, 0, 0.2),
+      inset 1px 1px 3px rgba(255, 255, 255, 0.6);
+    padding: 15px;
+  }
+
+  .neo-card-header {
+    background: linear-gradient(to bottom, #a9d2f3, #89b9e0);
+    text-align: center;
+    padding: 8px;
+    font-weight: bold;
+    border-bottom: 2px solid #2f77bb;
+    border-radius: 6px 6px 0 0;
+    margin: -15px -15px 15px -15px;
+    color: #1a3a5c;
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  /* ==================== NEO INPUTS ==================== */
+  .neo-input {
+    height: 32px;
+    border: 2px solid #2c73b6;
+    background: #fffde3;
+    padding: 4px 10px;
+    outline: none;
+    font-size: 14px;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+  }
+
+  .neo-input:focus {
+    border-color: #4f8fd0;
+    box-shadow: 0 0 0 3px rgba(44, 115, 182, 0.2);
+    background: #fff;
+  }
+
+  .neo-select {
+    height: 32px;
+    border: 2px solid #2c73b6;
+    background: #fffde3;
+    padding: 4px 10px;
+    outline: none;
+    font-size: 14px;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+
+  /* ==================== NEO TABLE ==================== */
+  .neo-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    border: 2px solid #2f77bb;
+  }
+
+  .neo-table th {
+    background: linear-gradient(to bottom, #d4e6f7, #b7dff6);
+    border: 1px solid #2f77bb;
+    padding: 10px;
+    font-size: 13px;
+    font-weight: bold;
+    color: #1a3a5c;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .neo-table td {
+    border: 1px solid #2f77bb;
+    padding: 8px;
+    font-size: 13px;
+  }
+
+  .neo-table tbody tr:hover {
+    background: #fffde3;
+    cursor: pointer;
+  }
+
+  .neo-table tbody tr.selected {
+    background: #e8f4fd;
+    font-weight: bold;
+  }
+
+  /* ==================== NEO TABS ==================== */
+  .neo-tabs {
+    display: flex;
+    border: 2px solid #2f77bb;
+    border-radius: 6px 6px 0 0;
+    overflow: hidden;
+  }
+
+  .neo-tab {
+    flex: 1;
+    background: #d3e1ef;
+    border-right: 1px solid #2f77bb;
+    text-align: center;
+    padding: 10px;
+    font-size: 13px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: #333;
+  }
+
+  .neo-tab:last-child {
+    border-right: none;
+  }
+
+  .neo-tab.active {
+    background: #f4f4f4;
+    color: #1a3a5c;
+  }
+
+  .neo-tab:hover:not(.active) {
+    background: #e8f0f8;
+  }
+
+  /* ==================== NEO PANEL ==================== */
+  .neo-panel {
+    border: 2px solid #2f73b8;
+    background: #d7e7f4;
+    border-radius: 6px;
+    overflow: hidden;
+  }
+
+  .neo-panel-title {
+    background: linear-gradient(to bottom, #a9d2f3, #89b9e0);
+    text-align: center;
+    padding: 8px;
+    font-weight: bold;
+    border-bottom: 2px solid #2f73b8;
+    font-size: 14px;
+    color: #1a3a5c;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  /* ==================== NEO BADGE ==================== */
+  .neo-badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .neo-badge-success {
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+  }
+
+  .neo-badge-warning {
+    background: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffeaa7;
+  }
+
+  .neo-badge-danger {
+    background: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+  }
+
+  .neo-badge-info {
+    background: #d1ecf1;
+    color: #0c5460;
+    border: 1px solid #bee5eb;
+  }
+
+  .neo-badge-primary {
+    background: #cce5ff;
+    color: #004085;
+    border: 1px solid #b8daff;
+  }
+
+  /* ==================== LOADING STATES ==================== */
+  .neo-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+  }
+
+  .neo-spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid #d3e1ef;
+    border-top: 4px solid #2c5f9b;
+    border-radius: 50%;
+    animation: neo-spin 1s linear infinite;
+  }
+
+  @keyframes neo-spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+
+  /* ==================== EMPTY STATE ==================== */
+  .neo-empty {
+    text-align: center;
+    padding: 40px 20px;
+    color: #888;
+  }
+
+  .neo-empty-icon {
+    font-size: 64px;
+    margin-bottom: 15px;
+    opacity: 0.5;
+  }
+
+  .neo-empty-text {
+    font-size: 18px;
+    font-weight: 500;
+    margin-bottom: 8px;
+  }
+
+  .neo-empty-subtext {
+    font-size: 14px;
+    color: #aaa;
+  }
+
+  /* ==================== GLASS CARD (Alternative Style) ==================== */
   .glass-card {
-    @apply bg-white/80 backdrop-blur-lg rounded-2xl shadow-glass border border-white/20;
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(10px);
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
   }
 
-  .btn-primary {
-    @apply bg-gradient-to-r from-primary-500 to-primary-700 text-white px-6 py-3 rounded-xl 
-           shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300 
-           font-semibold text-sm;
-  }
-
+  /* ==================== STAT CARD ==================== */
   .stat-card {
-    @apply relative overflow-hidden p-6 bg-white rounded-2xl shadow-lg 
-           hover:shadow-2xl transition-all duration-500 cursor-pointer 
-           border border-gray-100 hover:border-primary-200;
+    position: relative;
+    overflow: hidden;
+    padding: 20px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+    transition: all 0.3s ease;
+    cursor: pointer;
+    border: 1px solid #e5e7eb;
   }
 
-  .stat-icon {
-    @apply absolute top-4 right-4 text-4xl opacity-20;
+  .stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+    border-color: #3b82f6;
   }
+
+  /* ==================== DASHBOARD LAYOUT ==================== */
+  .dashboard-bg {
+    background: linear-gradient(135deg, #d8d8d8 0%, #e8e8e8 50%, #d8d8d8 100%);
+  }
+
+  .sidebar-gradient {
+    background: linear-gradient(180deg, #1a3a5c 0%, #0f2740 100%);
+  }
+
+  /* ==================== ANIMATIONS ==================== */
+  @keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+  }
+
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+
+  @keyframes pulse-slow {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+  }
+
+  .animate-pulse-slow {
+    animation: pulse-slow 3s ease-in-out infinite;
+  }
+
+  @keyframes slide-in-right {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+  }
+
+  .animate-slide-in-right {
+    animation: slide-in-right 0.3s ease-out;
+  }
+
+  @keyframes slide-in-up {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+
+  .animate-slide-in-up {
+    animation: slide-in-up 0.3s ease-out;
+  }
+
+  /* ==================== PRINT STYLES ==================== */
+  @media print {
+    body {
+      background: white !important;
+    }
+
+    .no-print {
+      display: none !important;
+    }
+
+    .print-only {
+      display: block !important;
+    }
+
+    .sidebar,
+    .header-bar,
+    .neo-btn,
+    button {
+      display: none !important;
+    }
+
+    .print-area {
+      width: 100% !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      box-shadow: none !important;
+      border: none !important;
+    }
+  }
+
+  .print-only {
+    display: none;
+  }
+
+  /* ==================== RESPONSIVE UTILITIES ==================== */
+  @media (max-width: 768px) {
+    .hide-mobile {
+      display: none !important;
+    }
+
+    .show-mobile {
+      display: block !important;
+    }
+
+    .neo-tabs {
+      flex-wrap: wrap;
+    }
+
+    .neo-tab {
+      flex: 1 1 50%;
+      min-width: 120px;
+    }
+  }
+
+  @media (min-width: 769px) {
+    .hide-desktop {
+      display: none !important;
+    }
+
+    .show-desktop {
+      display: block !important;
+    }
+  }
+}
+
+/* ==================== GLOBAL OVERRIDES ==================== */
+/* Ensure all inputs have consistent styling */
+input, select, textarea {
+  font-family: 'Inter', sans-serif;
+}
+
+/* Remove default focus outline and add custom one */
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+button:focus-visible {
+  outline: 2px solid #2c5f9b;
+  outline-offset: 2px;
+}
+
+/* Smooth transitions for all interactive elements */
+a, button, input, select, textarea {
+  transition: all 0.2s ease;
+}
+
+/* Ensure images are responsive */
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Toast notification styles */
+.toast-container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.toast {
+  padding: 12px 20px;
+  border-radius: 8px;
+  color: white;
+  font-size: 14px;
+  font-weight: 500;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  animation: slide-in-right 0.3s ease-out;
+  min-width: 250px;
+  max-width: 400px;
+}
+
+.toast-success {
+  background: linear-gradient(135deg, #10b981, #059669);
+}
+
+.toast-error {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+}
+
+.toast-warning {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+}
+
+.toast-info {
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+}
+
+/* Modal overlay */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(2px);
+}
+
+/* Tooltip */
+.tooltip {
+  position: relative;
+}
+
+.tooltip::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #1a3a5c;
+  color: white;
+  padding: 5px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s;
+}
+
+.tooltip:hover::after {
+  opacity: 1;
 }
