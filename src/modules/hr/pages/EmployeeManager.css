@@ -1,0 +1,270 @@
+.employee-manager-wrapper {
+  width: 100%;
+  min-height: 100vh;
+  background: #d8d8d8;
+  padding: 10px;
+  font-family: Arial, sans-serif;
+}
+
+/* ================= TITLE ================= */
+.em-top-title {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  margin-bottom: 10px;
+}
+
+.em-top-title h1 {
+  font-family: 'Alumni Sans Pinstripe', sans-serif;
+  font-size: 70px;
+  color: #2c5f9b;
+  letter-spacing: 3px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.em-users-icon {
+  position: absolute;
+  left: 15px;
+  top: 5px;
+  font-size: 60px;
+  color: #2f5f9b;
+}
+
+/* ================= TOP BAR ================= */
+.em-top-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.em-label {
+  font-size: 16px;
+  font-weight: bold;
+  color: #333;
+}
+
+.em-input {
+  height: 28px;
+  border: 1px solid #2c73b6;
+  background: #fff;
+  padding: 4px 8px;
+  outline: none;
+  font-size: 14px;
+}
+
+.em-employee-input {
+  width: 340px;
+}
+
+.em-id-input {
+  width: 140px;
+}
+
+/* ================= BUTTONS ================= */
+.em-neo-btn {
+  height: 32px;
+  padding: 0 16px;
+  border: none;
+  border-radius: 7px;
+  background: linear-gradient(to bottom, #4f8fd0, #2d5f98);
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow:
+    3px 3px 6px rgba(0,0,0,0.35),
+    inset 1px 1px 2px rgba(255,255,255,0.5);
+  transition: 0.2s;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.em-neo-btn:hover {
+  transform: translateY(1px);
+  box-shadow:
+    inset 3px 3px 6px rgba(0,0,0,0.3),
+    inset -2px -2px 5px rgba(255,255,255,0.5);
+}
+
+/* ================= TABS ================= */
+.em-tabs {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  border: 1px solid #2f77bb;
+  margin-bottom: 0;
+}
+
+.em-tab {
+  background: #d3e1ef;
+  border-right: 1px solid #2f77bb;
+  text-align: center;
+  padding: 8px;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.em-tab.active {
+  background: #f4f4f4;
+}
+
+.em-tab:hover {
+  background: #e8f0f8;
+}
+
+/* ================= CONTENT ================= */
+.em-content {
+  border: 1px solid #2f77bb;
+  background: #d7e5f2;
+  display: grid;
+  grid-template-columns: 1fr 170px;
+  gap: 20px;
+  padding: 10px;
+}
+
+/* ================= FORM GRID ================= */
+.em-form-grid {
+  display: grid;
+  grid-template-columns: 140px 1fr 140px 1fr;
+  border-top: 1px solid #2f77bb;
+  border-left: 1px solid #2f77bb;
+}
+
+.em-cell {
+  border-right: 1px solid #2f77bb;
+  border-bottom: 1px solid #2f77bb;
+  min-height: 38px;
+  display: flex;
+  align-items: center;
+  padding: 6px;
+  background: #dce8f5;
+}
+
+.em-label-cell {
+  justify-content: flex-end;
+  font-weight: bold;
+  background: #d7e5f2;
+}
+
+.em-cell input,
+.em-cell select {
+  width: 100%;
+  border: none;
+  background: #fffde3;
+  height: 25px;
+  padding: 5px;
+  outline: none;
+  font-size: 13px;
+}
+
+.em-cell select {
+  cursor: pointer;
+}
+
+/* ================= PHOTO PANEL ================= */
+.em-photo-panel {
+  border: 1px solid #2f77bb;
+  background: #dce8f5;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+}
+
+.em-photo-box {
+  width: 150px;
+  height: 170px;
+  border: 3px solid #3569a3;
+  background: #edf3f9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-radius: 4px;
+}
+
+.em-photo-box img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.em-add-picture {
+  margin-top: 10px;
+  color: #0066cc;
+  font-weight: bold;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.em-add-picture:hover {
+  text-decoration: underline;
+}
+
+/* ================= ATTACHMENTS ================= */
+.em-attachments {
+  margin-top: 15px;
+  border: 1px solid #2f77bb;
+}
+
+.em-attachment-top {
+  display: flex;
+  gap: 5px;
+  padding: 5px;
+  background: #c9dff2;
+  border-bottom: 1px solid #2f77bb;
+  flex-wrap: wrap;
+}
+
+.em-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+}
+
+.em-table th {
+  background: #d4e6f7;
+  border: 1px solid #2f77bb;
+  padding: 8px;
+  font-size: 14px;
+  font-weight: bold;
+  text-align: left;
+}
+
+.em-table td {
+  border: 1px solid #2f77bb;
+  padding: 8px;
+  font-size: 13px;
+}
+
+.em-table tbody tr:hover {
+  background: #fffde3;
+}
+
+/* ================= RESPONSIVE ================= */
+@media (max-width: 900px) {
+  .em-content {
+    grid-template-columns: 1fr;
+  }
+
+  .em-form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .em-tabs {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .em-top-title h1 {
+    font-size: 40px;
+  }
+
+  .em-employee-input {
+    width: 200px;
+  }
+}
