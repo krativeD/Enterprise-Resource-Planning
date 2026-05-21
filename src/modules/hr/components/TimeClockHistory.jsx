@@ -1,95 +1,140 @@
 import React, { useState, useEffect } from 'react'
-import { motion } from 'framer-motion'
-import { MdAccessTime, MdCheckCircle, MdCancel, MdWarning } from 'react-icons/md'
+import { supabase } from '../../../services/supabase'
+import { useToast } from '../../../hooks/useToast'
 
 const TimeClockHistory = ({ employeeId }) => {
-  const [timeRecords, setTimeRecords] = useState([
-    { id: 1, date: '2024-03-01', clockIn: '08:00 AM', clockOut: '05:00 PM', hours: 8.5, status: 'Present' },
-    { id: 2, date: '2024-03-02', clockIn: '08:15 AM', clockOut: '05:10 PM', hours: 8.9, status: 'Present' },
-    { id: 3, date: '2024-03-03', clockIn: '08:00 AM', clockOut: '04:45 PM', hours: 8.75, status: 'Present' },
-    { id: 4, date: '2024-03-04', clockIn: '09:00 AM', clockOut: '05:00 PM', hours: 8.0, status: 'Late' },
-    { id: 5, date: '2024-03-05', clockIn: '--', clockOut: '--', hours: 0, status: 'Absent' },
-  ])
+  const [timeRecords, setTimeRecords] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [filter, setFilter] = useState('all')
+  const { showToast } = useToast()
 
-  const getStatusIcon = (status) => {
-    switch(status) {
-      case 'Present': return <MdCheckCircle className="text-green-500" />
-      case 'Late': return <MdWarning className="text-yellow-500" />
-      case 'Absent': return <MdCancel className="text-red-500" />
-      default: return null
+  useEffect(() => {
+    if (employeeId) {
+      loadTimeRecords()
+    }
+  }, [employeeId, filter])
+
+  const loadTimeRecords = async () => {
+    setLoading(true)
+    try {
+      let query = supabase
+        .from('attendance')
+        .select('*')
+        .eq('employee_id', employeeId)
+        .order('check_in', { ascending: false })
+
+      if (filter === 'thisMonth') {
+        const now = new Date()
+        query = query
+          .gte('check_in', new Date(now.getFullYear(), now.getMonth(), 1).toISOString())
+      } else if (filter === 'lastMonth') {
+        const now = new Date()
+        query = query
+          .gte('check_in', new Date(now.getFullYear(), now.getMonth() - 1, 1).toISOString())
+          .lt('check_in', new Date(now.getFullYear(), now.getMonth(), 1).toISOString())
+      }
+
+      const { data, error } = await query
+
+      if (error) throw error
+      setTimeRecords(data || [])
+    } catch (error) {
+      console.error('Error loading time records:', error)
+      showToast('Error loading time clock history', 'error')
+    } finally {
+      setLoading(false)
     }
   }
 
+  const formatDateTime = (dateStr) => {
+    if (!dateStr) return '--'
+    return new Date(dateStr).toLocaleString()
+  }
+
+  const formatTime = (dateStr) => {
+    if (!dateStr) return '--'
+    return new Date(dateStr).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+  }
+
+  const calculateHours = (checkIn, checkOut) => {
+    if (!checkIn || !checkOut) return '--'
+    const diff = new Date(checkOut) - new Date(checkIn)
+    return (diff / (1000 * 60 * 60)).toFixed(2)
+  }
+
   return (
-    <div>
-      <div className="flex justify-between items-center mb-4">
-        <h3 className="text-lg font-semibold text-gray-800">Time Clock History</h3>
-        <div className="flex space-x-2">
-          <select className="px-3 py-2 border border-gray-300 rounded-lg">
-            <option>March 2024</option>
-            <option>February 2024</option>
-            <option>January 2024</option>
-          </select>
-        </div>
+    <div className="em-tab-content">
+      <div className="em-tab-header">
+        <h3>Time Clock History</h3>
+        <select 
+          value={filter} 
+          onChange={(e) => setFilter(e.target.value)}
+          className="em-filter-select"
+        >
+          <option value="all">All Records</option>
+          <option value="thisMonth">This Month</option>
+          <option value="lastMonth">Last Month</option>
+        </select>
       </div>
 
-      <div className="overflow-x-auto">
-        <table className="w-full">
-          <thead>
-            <tr className="bg-gray-50">
-              <th className="text-left p-3">Date</th>
-              <th className="text-left p-3">Clock In</th>
-              <th className="text-left p-3">Clock Out</th>
-              <th className="text-left p-3">Hours</th>
-              <th className="text-left p-3">Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            {timeRecords.map((record, index) => (
-              <motion.tr
-                key={record.id}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: index * 0.05 }}
-                className="border-t hover:bg-gray-50"
-              >
-                <td className="p-3">{record.date}</td>
-                <td className="p-3">{record.clockIn}</td>
-                <td className="p-3">{record.clockOut}</td>
-                <td className="p-3">{record.hours}h</td>
-                <td className="p-3">
-                  <div className="flex items-center space-x-2">
-                    {getStatusIcon(record.status)}
-                    <span className={`text-sm ${
-                      record.status === 'Present' ? 'text-green-600' :
-                      record.status === 'Late' ? 'text-yellow-600' : 'text-red-600'
-                    }`}>
-                      {record.status}
+      {loading ? (
+        <div className="em-loading">Loading time records...</div>
+      ) : timeRecords.length === 0 ? (
+        <div className="em-empty-state">
+          <div className="em-empty-icon">🕐</div>
+          <div className="em-empty-text">No Time Records</div>
+          <div className="em-empty-subtext">No clock in/out records found for this employee</div>
+        </div>
+      ) : (
+        <div className="em-table-wrapper">
+          <table className="em-table">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Clock In</th>
+                <th>Clock Out</th>
+                <th>Hours Worked</th>
+                <th>Status</th>
+                <th>Location</th>
+              </tr>
+            </thead>
+            <tbody>
+              {timeRecords.map((record) => (
+                <tr key={record.id}>
+                  <td>{record.check_in ? new Date(record.check_in).toLocaleDateString() : '--'}</td>
+                  <td>{formatTime(record.check_in)}</td>
+                  <td>{formatTime(record.check_out)}</td>
+                  <td>{calculateHours(record.check_in, record.check_out)} hrs</td>
+                  <td>
+                    <span className={`em-status-badge em-status-${record.status?.toLowerCase()}`}>
+                      {record.status || 'Present'}
                     </span>
-                  </div>
-                </td>
-              </motion.tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+                  </td>
+                  <td>{record.location ? '📍 GPS Tracked' : '--'}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
 
-      <div className="mt-4 p-4 bg-gray-50 rounded-lg">
-        <div className="grid grid-cols-3 gap-4 text-center">
+      {/* Summary */}
+      {timeRecords.length > 0 && (
+        <div className="em-summary-bar">
           <div>
-            <p className="text-sm text-gray-600">Total Hours</p>
-            <p className="text-2xl font-bold text-blue-600">34.15h</p>
+            <span>Total Records: </span>
+            <strong>{timeRecords.length}</strong>
           </div>
           <div>
-            <p className="text-sm text-gray-600">Overtime</p>
-            <p className="text-2xl font-bold text-green-600">4.15h</p>
-          </div>
-          <div>
-            <p className="text-sm text-gray-600">Attendance Rate</p>
-            <p className="text-2xl font-bold text-purple-600">95%</p>
+            <span>Total Hours: </span>
+            <strong>
+              {timeRecords
+                .reduce((sum, r) => sum + parseFloat(calculateHours(r.check_in, r.check_out) || 0), 0)
+                .toFixed(2)} hrs
+            </strong>
           </div>
         </div>
-      </div>
+      )}
     </div>
   )
 }
