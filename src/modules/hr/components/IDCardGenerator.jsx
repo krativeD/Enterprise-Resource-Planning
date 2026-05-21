@@ -8,94 +8,134 @@ const IDCardGenerator = ({ employee, onClose }) => {
 
   const handleDownload = async () => {
     if (cardRef.current) {
-      const canvas = await html2canvas(cardRef.current)
+      const canvas = await html2canvas(cardRef.current, { scale: 2 })
       const link = document.createElement('a')
       link.download = `ID_Card_${employee?.first_name}_${employee?.last_name}.png`
-      link.href = canvas.toDataURL()
+      link.href = canvas.toDataURL('image/png')
       link.click()
     }
   }
 
   const handlePrint = async () => {
     if (cardRef.current) {
-      const canvas = await html2canvas(cardRef.current)
+      const canvas = await html2canvas(cardRef.current, { scale: 2 })
       const win = window.open()
       win.document.write(`<img src="${canvas.toDataURL()}"/>`)
-      win.print()
+      win.document.close()
+      win.focus()
+      setTimeout(() => win.print(), 500)
     }
   }
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="em-modal-overlay"
+      onClick={onClose}
+    >
       <motion.div
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        className="bg-white rounded-2xl p-6 max-w-2xl w-full mx-4"
+        exit={{ scale: 0.9, opacity: 0 }}
+        className="em-modal"
+        onClick={(e) => e.stopPropagation()}
+        style={{ maxWidth: '450px' }}
       >
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold text-gray-800">Employee ID Card</h2>
-          <motion.button
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
-            onClick={onClose}
-            className="text-gray-500 hover:text-gray-700"
-          >
-            <MdClose className="text-2xl" />
-          </motion.button>
+        <div className="em-modal-header">
+          <h2>🪪 Employee ID Card</h2>
+          <button onClick={onClose} className="em-modal-close">
+            <MdClose />
+          </button>
         </div>
-
-        {/* ID Card Preview */}
-        <div ref={cardRef} className="bg-gradient-to-r from-blue-600 to-blue-800 p-8 rounded-xl mb-6">
-          <div className="bg-white rounded-xl p-6">
-            <div className="flex items-start space-x-6">
-              <div className="w-32 h-32 bg-gray-200 rounded-xl overflow-hidden">
-                <img
-                  src={employee?.image_url || 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png'}
-                  className="w-full h-full object-cover"
-                  alt="Employee"
-                />
-              </div>
-              <div className="flex-1">
-                <h3 className="text-2xl font-bold text-gray-800">
-                  {employee?.first_name} {employee?.last_name}
-                </h3>
-                <p className="text-lg text-blue-600 font-semibold">{employee?.position}</p>
-                <div className="mt-2 space-y-1">
-                  <p className="text-sm text-gray-600">ID: {employee?.employee_id}</p>
-                  <p className="text-sm text-gray-600">Department: {employee?.department}</p>
-                  <p className="text-sm text-gray-600">Phone: {employee?.cell_phone}</p>
+        <div className="em-modal-body">
+          {/* ID Card */}
+          <div
+            ref={cardRef}
+            style={{
+              background: 'linear-gradient(135deg, #1e3a8a, #3b82f6)',
+              borderRadius: '16px',
+              padding: '24px',
+              color: 'white',
+              marginBottom: '20px'
+            }}
+          >
+            <div style={{
+              background: 'white',
+              borderRadius: '12px',
+              padding: '20px',
+              color: '#1a1a1a'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'start', gap: '16px', marginBottom: '16px' }}>
+                <div style={{
+                  width: '80px',
+                  height: '100px',
+                  borderRadius: '8px',
+                  overflow: 'hidden',
+                  border: '3px solid #1e3a8a',
+                  flexShrink: 0,
+                  background: '#e5e7eb'
+                }}>
+                  <img
+                    src={employee?.image_url || 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png'}
+                    alt="Employee"
+                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                  />
+                </div>
+                <div>
+                  <h3 style={{ fontSize: '20px', fontWeight: 'bold', color: '#1e3a8a', marginBottom: '4px' }}>
+                    {employee?.first_name} {employee?.last_name}
+                  </h3>
+                  <p style={{ fontSize: '14px', color: '#3b82f6', fontWeight: '600', marginBottom: '8px' }}>
+                    {employee?.position || 'Employee'}
+                  </p>
+                  <p style={{ fontSize: '12px', color: '#666', marginBottom: '2px' }}>
+                    ID: {employee?.employee_id || 'N/A'}
+                  </p>
+                  <p style={{ fontSize: '12px', color: '#666', marginBottom: '2px' }}>
+                    Dept: {employee?.department || 'N/A'}
+                  </p>
+                  <p style={{ fontSize: '12px', color: '#666' }}>
+                    Phone: {employee?.cell_phone || 'N/A'}
+                  </p>
                 </div>
               </div>
-            </div>
-            <div className="mt-4 pt-4 border-t">
-              <p className="text-xs text-gray-500">NDANDULENI CLEANING SERVICES</p>
-              <p className="text-xs text-gray-400">This card is property of Ndanduleni Cleaning</p>
+              <div style={{
+                borderTop: '2px solid #e5e7eb',
+                paddingTop: '12px',
+                textAlign: 'center'
+              }}>
+                <p style={{ fontSize: '10px', color: '#1e3a8a', fontWeight: '600', marginBottom: '2px' }}>
+                  NDANDULENI CLEANING SERVICES
+                </p>
+                <p style={{ fontSize: '9px', color: '#999' }}>
+                  This card is property of Ndanduleni Cleaning. If found, please return to HR.
+                </p>
+              </div>
             </div>
           </div>
-        </div>
 
-        <div className="flex space-x-4">
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={handleDownload}
-            className="flex-1 bg-blue-500 text-white px-4 py-3 rounded-lg hover:bg-blue-600 
-                     transition-colors flex items-center justify-center space-x-2"
-          >
-            <MdDownload /> <span>Download</span>
-          </motion.button>
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={handlePrint}
-            className="flex-1 bg-green-500 text-white px-4 py-3 rounded-lg hover:bg-green-600 
-                     transition-colors flex items-center justify-center space-x-2"
-          >
-            <MdPrint /> <span>Print</span>
-          </motion.button>
+          {/* Action Buttons */}
+          <div style={{ display: 'flex', gap: '12px' }}>
+            <button
+              className="em-neo-btn"
+              onClick={handleDownload}
+              style={{ flex: 1, height: '40px' }}
+            >
+              <MdDownload style={{ display: 'inline', marginRight: '5px' }} /> Download
+            </button>
+            <button
+              className="em-neo-btn em-neo-btn-green"
+              onClick={handlePrint}
+              style={{ flex: 1, height: '40px' }}
+            >
+              <MdPrint style={{ display: 'inline', marginRight: '5px' }} /> Print
+            </button>
+          </div>
         </div>
       </motion.div>
-    </div>
+    </motion.div>
   )
 }
 
