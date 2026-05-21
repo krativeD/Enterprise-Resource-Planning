@@ -26,7 +26,7 @@ import { useClientData } from '../hooks/useClientData'
 import { useToast } from '../../../hooks/useToast'
 
 const ClientManagement = () => {
-  const [activeView, setActiveView] = useState('list') // list, details, quotes, contracts
+  const [activeView, setActiveView] = useState('list')
   const [selectedClient, setSelectedClient] = useState(null)
   const [showClientForm, setShowClientForm] = useState(false)
   const [showQuotation, setShowQuotation] = useState(false)
@@ -56,6 +56,7 @@ const ClientManagement = () => {
 
   const views = [
     { id: 'list', label: 'Clients', icon: MdPeople },
+    { id: 'details', label: 'Details', icon: MdBusiness },
     { id: 'quotes', label: 'Quotations', icon: MdDescription },
     { id: 'contracts', label: 'Contracts', icon: MdAssignment },
     { id: 'invoices', label: 'Invoices', icon: MdReceipt },
@@ -90,6 +91,7 @@ const ClientManagement = () => {
         await deleteClient(id)
         showToast('Client deleted', 'success')
         setSelectedClient(null)
+        setActiveView('list')
       } catch (error) {
         showToast('Error deleting client', 'error')
       }
@@ -129,7 +131,7 @@ const ClientManagement = () => {
 
         {/* View Navigation */}
         <div className="max-w-7xl mx-auto px-6">
-          <div className="flex space-x-1">
+          <div className="flex space-x-1 overflow-x-auto">
             {views.map((view) => {
               const Icon = view.icon
               return (
@@ -138,7 +140,7 @@ const ClientManagement = () => {
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={() => setActiveView(view.id)}
-                  className={`flex items-center space-x-2 px-5 py-3 rounded-t-xl transition-all
+                  className={`flex items-center space-x-2 px-5 py-3 rounded-t-xl transition-all whitespace-nowrap
                     ${activeView === view.id
                       ? 'bg-white text-blue-600 font-semibold'
                       : 'bg-transparent text-blue-100 hover:bg-white/10'}`}
@@ -239,7 +241,7 @@ const ClientManagement = () => {
           {/* Main Content Area */}
           <div className="lg:col-span-3">
             <AnimatePresence mode="wait">
-              {activeView === 'list' && !selectedClient && (
+              {!selectedClient && activeView === 'list' && (
                 <motion.div
                   key="empty"
                   initial={{ opacity: 0 }}
@@ -279,18 +281,10 @@ const ClientManagement = () => {
                       setShowClientForm(true)
                     }}
                     onDelete={() => handleDeleteClient(selectedClient.id)}
-                    onCreateQuote={() => {
-                      setShowQuotation(true)
-                    }}
-                    onCreateContract={() => {
-                      setShowContract(true)
-                    }}
-                    onGenerateInvoice={() => {
-                      setShowInvoice(true)
-                    }}
-                    onManageSLA={() => {
-                      setShowSLA(true)
-                    }}
+                    onCreateQuote={() => setShowQuotation(true)}
+                    onCreateContract={() => setShowContract(true)}
+                    onGenerateInvoice={() => setShowInvoice(true)}
+                    onManageSLA={() => setShowSLA(true)}
                     onUpdate={(data) => handleUpdateClient(selectedClient.id, data)}
                   />
                 </motion.div>
@@ -301,11 +295,12 @@ const ClientManagement = () => {
                   key="quotes"
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
                 >
                   <QuotationForm
                     client={selectedClient}
-                    onSubmit={() => {
-                      showToast('Quotation created successfully', 'success')
+                    onSubmit={(data) => {
+                      showToast('Quotation created!', 'success')
                       setShowQuotation(false)
                     }}
                     onCancel={() => setShowQuotation(false)}
@@ -318,11 +313,12 @@ const ClientManagement = () => {
                   key="contracts"
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
                 >
                   <ContractForm
                     client={selectedClient}
-                    onSubmit={() => {
-                      showToast('Contract created successfully', 'success')
+                    onSubmit={(data) => {
+                      showToast('Contract created!', 'success')
                       setShowContract(false)
                     }}
                     onCancel={() => setShowContract(false)}
@@ -335,11 +331,12 @@ const ClientManagement = () => {
                   key="invoices"
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
                 >
                   <InvoiceGenerator
                     client={selectedClient}
-                    onGenerate={() => {
-                      showToast('Invoice generated successfully', 'success')
+                    onGenerate={(data) => {
+                      showToast('Invoice generated!', 'success')
                       setShowInvoice(false)
                     }}
                     onCancel={() => setShowInvoice(false)}
@@ -352,10 +349,9 @@ const ClientManagement = () => {
                   key="communication"
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
                 >
-                  <ClientCommunication
-                    client={selectedClient}
-                  />
+                  <ClientCommunication client={selectedClient} />
                 </motion.div>
               )}
             </AnimatePresence>
@@ -363,7 +359,7 @@ const ClientManagement = () => {
         </div>
       </div>
 
-      {/* Modals */}
+      {/* Client Form Modal */}
       <AnimatePresence>
         {showClientForm && (
           <motion.div
@@ -382,8 +378,12 @@ const ClientManagement = () => {
                 <h2 className="text-2xl font-bold text-gray-800">
                   {editing ? 'Edit Client' : 'New Client'}
                 </h2>
-                <button onClick={() => { setShowClientForm(false); setEditing(false) }}
-                  className="text-gray-500 hover:text-gray-700 text-2xl">✕</button>
+                <button 
+                  onClick={() => { setShowClientForm(false); setEditing(false) }}
+                  className="text-gray-500 hover:text-gray-700 text-2xl"
+                >
+                  ✕
+                </button>
               </div>
               <div className="p-6">
                 <ClientForm
@@ -410,10 +410,15 @@ const ClientManagement = () => {
             className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
           >
             <motion.div
-              initial={{ scale: 0.9 }}
-              animate={{ scale: 1 }}
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
               className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto"
             >
+              <div className="sticky top-0 bg-white border-b px-6 py-4 rounded-t-2xl flex justify-between items-center">
+                <h2 className="text-2xl font-bold text-gray-800">Create Quotation</h2>
+                <button onClick={() => setShowQuotation(false)} className="text-gray-500 hover:text-gray-700 text-2xl">✕</button>
+              </div>
               <QuotationForm
                 client={selectedClient}
                 onSubmit={(data) => {
