@@ -25,11 +25,8 @@ export const useToast = () => {
 
     setToasts(prev => [...prev, newToast])
 
-    // Auto remove after duration
     setTimeout(() => {
       setToasts(prev => prev.map(t => t.id === id ? { ...t, exiting: true } : t))
-      
-      // Remove after exit animation
       setTimeout(() => {
         setToasts(prev => prev.filter(t => t.id !== id))
       }, 300)
