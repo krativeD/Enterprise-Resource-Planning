@@ -282,3 +282,722 @@
   justify-content: space-around;
   font-size: 14px;
 }
+/* ==================== EMPLOYEE MANAGER WRAPPER ==================== */
+.employee-manager-wrapper {
+  width: 100%;
+  min-height: 100vh;
+  background: #d8d8d8;
+  padding: 10px;
+  font-family: Arial, sans-serif;
+  position: relative;
+}
+
+/* ==================== TITLE ==================== */
+.em-top-title {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  margin-bottom: 10px;
+}
+
+.em-top-title h1 {
+  font-family: 'Alumni Sans Pinstripe', sans-serif;
+  font-size: 70px;
+  color: #2c5f9b;
+  letter-spacing: 3px;
+  font-weight: 900;
+  text-transform: uppercase;
+  margin: 0;
+}
+
+.em-users-icon {
+  position: absolute;
+  left: 15px;
+  top: 5px;
+  font-size: 60px;
+  color: #2f5f9b;
+}
+
+/* ==================== TOP BAR ==================== */
+.em-top-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.em-label {
+  font-size: 16px;
+  font-weight: bold;
+  color: #333;
+}
+
+.em-input {
+  height: 28px;
+  border: 1px solid #2c73b6;
+  background: #fff;
+  padding: 4px 8px;
+  outline: none;
+  font-size: 14px;
+  font-family: Arial, sans-serif;
+}
+
+.em-employee-input {
+  width: 340px;
+}
+
+.em-id-input {
+  width: 140px;
+}
+
+/* ==================== NEUMORPHIC BUTTONS ==================== */
+.em-neo-btn {
+  height: 32px;
+  padding: 0 16px;
+  border: none;
+  border-radius: 7px;
+  background: linear-gradient(to bottom, #4f8fd0, #2d5f98);
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow:
+    3px 3px 6px rgba(0, 0, 0, 0.35),
+    inset 1px 1px 2px rgba(255, 255, 255, 0.5);
+  transition: all 0.2s ease;
+  font-size: 13px;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: Arial, sans-serif;
+}
+
+.em-neo-btn:hover {
+  transform: translateY(1px);
+  box-shadow:
+    inset 3px 3px 6px rgba(0, 0, 0, 0.3),
+    inset -2px -2px 5px rgba(255, 255, 255, 0.5);
+}
+
+.em-neo-btn:active {
+  transform: translateY(2px);
+}
+
+.em-neo-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+.em-neo-btn-green {
+  background: linear-gradient(to bottom, #2d8f4e, #1a5c32) !important;
+}
+
+.em-neo-btn-orange {
+  background: linear-gradient(to bottom, #f39c12, #e67e22) !important;
+}
+
+.em-neo-btn-red {
+  background: linear-gradient(to bottom, #e74c3c, #c0392b) !important;
+}
+
+.em-neo-btn-purple {
+  background: linear-gradient(to bottom, #8e44ad, #6c3483) !important;
+}
+
+/* ==================== TABS ==================== */
+.em-tabs {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  border: 1px solid #2f77bb;
+  margin-bottom: 0;
+}
+
+.em-tab {
+  background: #d3e1ef;
+  border-right: 1px solid #2f77bb;
+  text-align: center;
+  padding: 8px;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.2s;
+  color: #333;
+}
+
+.em-tab:last-child {
+  border-right: none;
+}
+
+.em-tab.active {
+  background: #f4f4f4;
+  color: #1a3a5c;
+}
+
+.em-tab:hover:not(.active) {
+  background: #e8f0f8;
+}
+
+/* ==================== CONTENT ==================== */
+.em-content {
+  border: 1px solid #2f77bb;
+  background: #d7e5f2;
+  display: grid;
+  grid-template-columns: 1fr 170px;
+  gap: 20px;
+  padding: 10px;
+  position: relative;
+}
+
+/* ==================== FORM GRID ==================== */
+.em-form-grid {
+  display: grid;
+  grid-template-columns: 140px 1fr 140px 1fr;
+  border-top: 1px solid #2f77bb;
+  border-left: 1px solid #2f77bb;
+}
+
+.em-cell {
+  border-right: 1px solid #2f77bb;
+  border-bottom: 1px solid #2f77bb;
+  min-height: 38px;
+  display: flex;
+  align-items: center;
+  padding: 6px;
+  background: #dce8f5;
+}
+
+.em-label-cell {
+  justify-content: flex-end;
+  font-weight: bold;
+  background: #d7e5f2;
+  color: #333;
+  font-size: 13px;
+  padding-right: 10px;
+}
+
+.em-cell input,
+.em-cell select {
+  width: 100%;
+  border: none;
+  background: #fffde3;
+  height: 25px;
+  padding: 5px;
+  outline: none;
+  font-size: 13px;
+  font-family: Arial, sans-serif;
+}
+
+.em-cell select {
+  cursor: pointer;
+}
+
+.em-cell input:focus,
+.em-cell select:focus {
+  background: #fff;
+  box-shadow: 0 0 0 2px rgba(44, 115, 182, 0.3);
+}
+
+/* ==================== PHOTO PANEL ==================== */
+.em-photo-panel {
+  border: 1px solid #2f77bb;
+  background: #dce8f5;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+}
+
+.em-photo-box {
+  width: 150px;
+  height: 170px;
+  border: 3px solid #3569a3;
+  background: #edf3f9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-radius: 4px;
+}
+
+.em-photo-box img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.em-add-picture {
+  margin-top: 10px;
+  color: #0066cc;
+  font-weight: bold;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.em-add-picture:hover {
+  text-decoration: underline;
+}
+
+/* ==================== ATTACHMENTS ==================== */
+.em-attachments {
+  margin-top: 15px;
+  border: 1px solid #2f77bb;
+}
+
+.em-attachment-top {
+  display: flex;
+  gap: 5px;
+  padding: 5px;
+  background: #c9dff2;
+  border-bottom: 1px solid #2f77bb;
+  flex-wrap: wrap;
+}
+
+.em-table-wrapper {
+  border: 1px solid #ddd;
+  overflow: hidden;
+}
+
+.em-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+}
+
+.em-table th {
+  background: #d4e6f7;
+  border: 1px solid #2f77bb;
+  padding: 8px;
+  font-size: 14px;
+  font-weight: bold;
+  text-align: left;
+  color: #1a3a5c;
+}
+
+.em-table td {
+  border: 1px solid #2f77bb;
+  padding: 8px;
+  font-size: 13px;
+}
+
+.em-table tbody tr:hover {
+  background: #fffde3;
+}
+
+.em-table tbody tr.em-selected-row {
+  background: #fffde3 !important;
+  font-weight: 500;
+}
+
+/* ==================== FILE LINKS ==================== */
+.em-file-link {
+  color: #0066cc;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.em-file-link:hover {
+  color: #004499;
+}
+
+.em-file-path {
+  font-size: 11px;
+  color: #888;
+  max-width: 150px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ==================== SMALL BUTTONS ==================== */
+.em-small-btn {
+  width: 28px;
+  height: 28px;
+  border: 1px solid #ccc;
+  background: #f0f0f0;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  transition: all 0.2s;
+  padding: 0;
+}
+
+.em-small-btn:hover {
+  background: #e0e0e0;
+  border-color: #999;
+}
+
+.em-small-btn-danger:hover {
+  background: #fdd;
+  border-color: #f88;
+}
+
+/* ==================== STATUS BADGES ==================== */
+.em-status-badge {
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: bold;
+  display: inline-block;
+}
+
+.em-status-active {
+  background: #d4edda;
+  color: #155724;
+}
+
+.em-status-inactive {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+.em-status-on-leave {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.em-status-suspended {
+  background: #ffeaa7;
+  color: #856404;
+}
+
+.em-status-terminated {
+  background: #f5c6cb;
+  color: #721c24;
+}
+
+.em-status-archived {
+  background: #e2e3e5;
+  color: #383d41;
+}
+
+.em-status-present {
+  background: #d4edda;
+  color: #155724;
+}
+
+.em-status-absent {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+.em-status-late {
+  background: #fff3cd;
+  color: #856404;
+}
+
+/* ==================== EMPLOYEE LIST ==================== */
+.em-employee-list {
+  margin-top: 15px;
+  border: 1px solid #2f77bb;
+  background: white;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.em-list-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 15px;
+  background: #d4e6f7;
+  border-bottom: 1px solid #2f77bb;
+  font-weight: bold;
+  font-size: 14px;
+  color: #1a3a5c;
+}
+
+/* ==================== TAB CONTENT ==================== */
+.em-tab-content {
+  position: relative;
+  min-height: 200px;
+}
+
+.em-tab-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #e5e7eb;
+}
+
+.em-tab-header h3 {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1a3a5c;
+  margin: 0;
+}
+
+.em-filter-select {
+  padding: 6px 12px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 13px;
+  background: white;
+  cursor: pointer;
+  font-family: Arial, sans-serif;
+}
+
+.em-summary-bar {
+  margin-top: 15px;
+  padding: 12px 15px;
+  background: #f0f4f8;
+  border-radius: 8px;
+  display: flex;
+  justify-content: space-around;
+  font-size: 14px;
+}
+
+/* ==================== EMPTY STATES ==================== */
+.em-empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: #888;
+}
+
+.em-empty-icon {
+  font-size: 64px;
+  margin-bottom: 15px;
+  opacity: 0.6;
+}
+
+.em-empty-text {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: #666;
+}
+
+.em-empty-subtext {
+  font-size: 14px;
+  color: #999;
+}
+
+.em-empty-attachments {
+  text-align: center;
+  padding: 30px;
+  color: #888;
+  background: #f9f9f9;
+}
+
+.em-empty-attachments p {
+  margin: 0;
+}
+
+.em-empty-attachments .em-empty-subtext {
+  margin-top: 5px;
+}
+
+/* ==================== LOADING ==================== */
+.em-loading {
+  text-align: center;
+  padding: 40px;
+  color: #666;
+  font-size: 14px;
+}
+
+.em-loading-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+
+/* ==================== NEO CARD ==================== */
+.neo-card {
+  background: #dce8f5;
+  border: 2px solid #2f77bb;
+  border-radius: 8px;
+  box-shadow:
+    4px 4px 8px rgba(0, 0, 0, 0.2),
+    inset 1px 1px 3px rgba(255, 255, 255, 0.6);
+  padding: 15px;
+}
+
+.neo-input {
+  height: 32px;
+  border: 2px solid #2c73b6;
+  background: #fffde3;
+  padding: 4px 10px;
+  outline: none;
+  font-size: 14px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  font-family: Arial, sans-serif;
+}
+
+.neo-input:focus {
+  border-color: #4f8fd0;
+  box-shadow: 0 0 0 3px rgba(44, 115, 182, 0.2);
+  background: #fff;
+}
+
+/* ==================== MODAL ==================== */
+.em-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.em-modal {
+  background: white;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 700px;
+  max-height: 80vh;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.em-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 20px;
+  background: #2c5f9b;
+  color: white;
+}
+
+.em-modal-header h2 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.em-modal-close {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 24px;
+  cursor: pointer;
+  padding: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.em-modal-body {
+  padding: 20px;
+  overflow-y: auto;
+  max-height: calc(80vh - 60px);
+}
+
+.em-archive-warning {
+  background: #fff3cd;
+  border: 1px solid #ffc107;
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+/* ==================== SPINNER ==================== */
+.neo-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #d3e1ef;
+  border-top: 4px solid #2c5f9b;
+  border-radius: 50%;
+  animation: neo-spin 1s linear infinite;
+}
+
+@keyframes neo-spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* ==================== TOAST CONTAINER ==================== */
+.toast-container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.toast {
+  padding: 12px 20px;
+  border-radius: 8px;
+  color: white;
+  font-size: 14px;
+  font-weight: 500;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  animation: toast-slide-in 0.3s ease-out;
+  min-width: 250px;
+  max-width: 400px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.toast-success { background: linear-gradient(135deg, #10b981, #059669); }
+.toast-error { background: linear-gradient(135deg, #ef4444, #dc2626); }
+.toast-warning { background: linear-gradient(135deg, #f59e0b, #d97706); }
+.toast-info { background: linear-gradient(135deg, #3b82f6, #2563eb); }
+
+.toast-icon { font-size: 20px; flex-shrink: 0; }
+.toast-message { flex: 1; }
+.toast-close { cursor: pointer; font-size: 18px; opacity: 0.7; flex-shrink: 0; }
+.toast-close:hover { opacity: 1; }
+.toast-exit { animation: toast-slide-out 0.3s ease-in forwards; }
+
+@keyframes toast-slide-in {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes toast-slide-out {
+  from { transform: translateX(0); opacity: 1; }
+  to { transform: translateX(100%); opacity: 0; }
+}
+
+/* ==================== RESPONSIVE ==================== */
+@media (max-width: 900px) {
+  .em-content {
+    grid-template-columns: 1fr;
+  }
+
+  .em-form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .em-tabs {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .em-top-title h1 {
+    font-size: 40px;
+  }
+
+  .em-employee-input {
+    width: 200px;
+  }
+
+  .em-top-bar {
+    justify-content: center;
+  }
+
+  .em-cell.em-label-cell {
+    justify-content: flex-start;
+    padding-left: 10px;
+  }
+
+  .em-photo-panel {
+    order: -1;
+  }
+}
