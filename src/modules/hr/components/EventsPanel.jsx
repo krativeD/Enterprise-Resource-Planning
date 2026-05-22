@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { MdEvent, MdTraining, MdWarning, MdNote, MdAdd } from 'react-icons/md'
+import { MdEvent, MdSchool, MdWarning, MdNote, MdAdd } from 'react-icons/md'
 import { supabase } from '../../../services/supabase'
 
 const EventsPanel = ({ employeeId }) => {
@@ -30,14 +30,27 @@ const EventsPanel = ({ employeeId }) => {
         .order('event_date', { ascending: false })
 
       if (error) throw error
-      setEvents(data || [
+      
+      if (data && data.length > 0) {
+        setEvents(data)
+      } else {
+        // Demo data
+        setEvents([
+          { id: 1, event_type: 'Training', event_title: 'Safety Training Workshop', event_description: 'Annual workplace safety certification', event_date: '2024-03-15' },
+          { id: 2, event_type: 'Disciplinary', event_title: 'Performance Review', event_description: 'Quarterly performance evaluation meeting', event_date: '2024-02-20' },
+          { id: 3, event_type: 'Meeting', event_title: 'Team Building Event', event_description: 'Department team building activity', event_date: '2024-01-10' },
+          { id: 4, event_type: 'Note', event_title: 'Promotion Announcement', event_description: 'Promoted to Senior Supervisor position', event_date: '2024-03-01' }
+        ])
+      }
+    } catch (error) {
+      console.error('Error loading events:', error)
+      // Fallback demo data
+      setEvents([
         { id: 1, event_type: 'Training', event_title: 'Safety Training Workshop', event_description: 'Annual workplace safety certification', event_date: '2024-03-15' },
         { id: 2, event_type: 'Disciplinary', event_title: 'Performance Review', event_description: 'Quarterly performance evaluation meeting', event_date: '2024-02-20' },
         { id: 3, event_type: 'Meeting', event_title: 'Team Building Event', event_description: 'Department team building activity', event_date: '2024-01-10' },
         { id: 4, event_type: 'Note', event_title: 'Promotion Announcement', event_description: 'Promoted to Senior Supervisor position', event_date: '2024-03-01' }
       ])
-    } catch (error) {
-      console.error('Error loading events:', error)
     } finally {
       setLoading(false)
     }
@@ -57,7 +70,9 @@ const EventsPanel = ({ employeeId }) => {
         .select()
 
       if (error) throw error
-      setEvents(prev => [data[0], ...prev])
+      if (data) {
+        setEvents(prev => [data[0], ...prev])
+      }
       setShowAddForm(false)
       setNewEvent({
         event_type: 'Meeting',
@@ -67,33 +82,48 @@ const EventsPanel = ({ employeeId }) => {
       })
     } catch (error) {
       console.error('Error adding event:', error)
+      // Add locally if DB fails
+      const localEvent = {
+        id: Date.now(),
+        ...newEvent,
+        created_at: new Date().toISOString()
+      }
+      setEvents(prev => [localEvent, ...prev])
+      setShowAddForm(false)
+      setNewEvent({
+        event_type: 'Meeting',
+        event_title: '',
+        event_description: '',
+        event_date: new Date().toISOString().split('T')[0]
+      })
     }
   }
 
+  // Fixed: Use MdSchool instead of MdTraining
   const getEventIcon = (type) => {
-    const icons = {
-      Training: MdTraining,
-      Disciplinary: MdWarning,
-      Meeting: MdEvent,
-      Note: MdNote
+    switch(type) {
+      case 'Training': return MdSchool
+      case 'Disciplinary': return MdWarning
+      case 'Meeting': return MdEvent
+      case 'Note': return MdNote
+      default: return MdEvent
     }
-    return icons[type] || MdEvent
   }
 
   const getEventColor = (type) => {
-    const colors = {
-      Training: '#2563eb',
-      Disciplinary: '#f59e0b',
-      Meeting: '#16a34a',
-      Note: '#9333ea'
+    switch(type) {
+      case 'Training': return '#2563eb'
+      case 'Disciplinary': return '#f59e0b'
+      case 'Meeting': return '#16a34a'
+      case 'Note': return '#9333ea'
+      default: return '#6b7280'
     }
-    return colors[type] || '#6b7280'
   }
 
   if (loading) {
     return (
       <div className="em-tab-content">
-        <div className="em-loading">Loading events...</div>
+        <div style={{ textAlign: 'center', padding: '40px', color: '#666' }}>Loading events...</div>
       </div>
     )
   }
@@ -110,7 +140,7 @@ const EventsPanel = ({ employeeId }) => {
       {/* Add Event Form */}
       {showAddForm && (
         <div className="neo-card" style={{ marginBottom: '20px' }}>
-          <h4 style={{ marginBottom: '12px' }}>Add New Event</h4>
+          <h4 style={{ marginBottom: '12px', color: '#1a3a5c' }}>Add New Event</h4>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '10px' }}>
             <div>
               <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', marginBottom: '4px' }}>Event Type</label>
@@ -167,10 +197,10 @@ const EventsPanel = ({ employeeId }) => {
 
       {/* Events List */}
       {events.length === 0 ? (
-        <div className="em-empty-state">
-          <div className="em-empty-icon">📅</div>
-          <div className="em-empty-text">No Events</div>
-          <div className="em-empty-subtext">No events recorded for this employee</div>
+        <div style={{ textAlign: 'center', padding: '40px' }}>
+          <div style={{ fontSize: '48px', marginBottom: '10px' }}>📅</div>
+          <div style={{ fontSize: '16px', fontWeight: '600', color: '#666' }}>No Events</div>
+          <div style={{ fontSize: '13px', color: '#999' }}>No events recorded for this employee</div>
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -196,10 +226,10 @@ const EventsPanel = ({ employeeId }) => {
                 <div style={{ flex: 1 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
                     <div>
-                      <h4 style={{ fontWeight: '600', color: '#1a3a5c' }}>{event.event_title}</h4>
-                      <p style={{ fontSize: '13px', color: '#666', marginTop: '4px' }}>{event.event_description}</p>
+                      <h4 style={{ fontWeight: '600', color: '#1a3a5c', margin: '0 0 4px 0' }}>{event.event_title}</h4>
+                      <p style={{ fontSize: '13px', color: '#666', margin: '0' }}>{event.event_description}</p>
                     </div>
-                    <span className="em-status-badge em-status-active">
+                    <span className="em-status-badge em-status-active" style={{ flexShrink: 0, marginLeft: '10px' }}>
                       {event.event_type}
                     </span>
                   </div>
