@@ -18,7 +18,7 @@ export default function MyJobs() {
   const { fetchMyJobs, fetchMobileStats } = useMobileStore()
   const navigate = useNavigate()
   
-  const [activeTab, setActiveTab] = useState('mine') // Default to My Jobs
+  const [activeTab, setActiveTab] = useState('mine')
   const [openJobs, setOpenJobs] = useState([])
   const [myJobs, setMyJobs] = useState([])
   const [loading, setLoading] = useState(true)
@@ -38,37 +38,60 @@ export default function MyJobs() {
 
   const findEmployee = async () => {
     try {
-      let { data: emp } = await supabase.from('employees').select('id, first_name, last_name').eq('user_id', user?.id).single()
+      // Try by user_id
+      let { data: emp } = await supabase
+        .from('employees')
+        .select('id, first_name, last_name')
+        .eq('user_id', user?.id)
+        .single()
+
       if (emp) { 
+        const fullName = ((emp.first_name || '') + ' ' + (emp.last_name || '')).trim()
+        console.log('✅ Found employee by user_id:', emp.id, 'Name:', fullName)
         setMyEmployeeId(emp.id)
-        setMyCleanerName((emp.first_name || '') + ' ' + (emp.last_name || '')).trim()
+        setMyCleanerName(fullName)
         return 
       }
       
-      const { data: empByEmail } = await supabase.from('employees').select('id, first_name, last_name').eq('email', user?.email).single()
+      // Try by email
+      const { data: empByEmail } = await supabase
+        .from('employees')
+        .select('id, first_name, last_name')
+        .eq('email', user?.email)
+        .single()
+
       if (empByEmail) { 
         await supabase.from('employees').update({ user_id: user?.id }).eq('id', empByEmail.id)
+        const fullName = ((empByEmail.first_name || '') + ' ' + (empByEmail.last_name || '')).trim()
+        console.log('✅ Found employee by email:', empByEmail.id, 'Name:', fullName)
         setMyEmployeeId(empByEmail.id)
-        setMyCleanerName((empByEmail.first_name || '') + ' ' + (empByEmail.last_name || '')).trim()
+        setMyCleanerName(fullName)
         return 
       }
 
-      const firstName = user?.email?.split('@')[0] || 'Cleaner'
+      // Create new
+      const firstName = profile?.full_name?.split(' ')[0] || user?.email?.split('@')[0] || 'Cleaner'
+      const lastName = profile?.full_name?.split(' ').slice(1).join(' ') || ''
       const { data: newEmp } = await supabase.from('employees').insert([{
-        user_id: user?.id, first_name: firstName, last_name: '',
+        user_id: user?.id, first_name: firstName, last_name: lastName,
         email: user?.email, employment_status: 'active', department: 'Cleaning'
-      }]).select('id, first_name').single()
+      }]).select('id, first_name, last_name').single()
+      
       if (newEmp) {
+        const fullName = ((newEmp.first_name || '') + ' ' + (newEmp.last_name || '')).trim()
+        console.log('✅ Created new employee:', newEmp.id, 'Name:', fullName)
         setMyEmployeeId(newEmp.id)
-        setMyCleanerName(newEmp.first_name || 'Cleaner')
+        setMyCleanerName(fullName)
       }
-    } catch (e) {}
+    } catch (e) {
+      console.error('❌ Employee setup error:', e)
+    }
   }
 
   const loadAllJobs = async () => {
     setLoading(true)
     try {
-      // OPEN JOBS: All scheduled/pending jobs
+      // OPEN JOBS
       const { data: open } = await supabase
         .from('jobs')
         .select('id, title, job_number, status, scheduled_date, scheduled_start_time, scheduled_end_time, site_address, notes, clients(company_name, phone), job_categories(name, color)')
@@ -77,8 +100,9 @@ export default function MyJobs() {
         .order('scheduled_start_time', { ascending: true })
 
       setOpenJobs(open || [])
+      console.log('📋 Open Pool loaded:', open?.length || 0)
 
-      // MY JOBS: Only jobs assigned to THIS cleaner (by name matching)
+      // ALL ACTIVE JOBS - load all first, then filter
       const { data: allActive } = await supabase
         .from('jobs')
         .select('id, title, job_number, status, scheduled_date, scheduled_start_time, scheduled_end_time, site_address, notes, clients(company_name, phone), job_categories(name, color)')
@@ -86,26 +110,66 @@ export default function MyJobs() {
         .order('scheduled_date', { ascending: true })
         .order('scheduled_start_time', { ascending: true })
 
-      // Filter by cleaner name
+      console.log('📊 All active jobs loaded:', allActive?.length || 0)
+      
+      if (allActive && allActive.length > 0) {
+        console.log('📝 Active job notes:')
+        allActive.forEach(j => console.log('  -', j.job_number, j.title, '| Notes:', j.notes?.substring(0, 80)))
+      }
+
+      // Filter by cleaner name - use multiple matching strategies
       const myName = myCleanerName || profile?.full_name || user?.email?.split('@')[0] || ''
-      console.log('🔍 Jobs tab - filtering for:', myName)
+      const myFirstName = myName.split(' ')[0] || ''
+      
+      console.log('🔍 Filtering for cleaner:', { myName, myFirstName, myCleanerName })
       
       const myJobsOnly = (allActive || []).filter(job => {
         if (!job.notes) return false
-        const notes = job.notes.toLowerCase()
-        const name = myName.toLowerCase()
-        return (notes.includes('selected by:') && notes.includes(name)) ||
-               (notes.includes('assigned by management:') && notes.includes(name))
+        
+        const notes = job.notes
+        
+        // Strategy 1: Check for "SELECTED BY: Name"
+        if (notes.includes('SELECTED BY:')) {
+          const selectedName = notes.split('SELECTED BY:')[1]?.split('at')[0]?.trim() || ''
+          if (selectedName.toLowerCase().includes(myName.toLowerCase()) ||
+              selectedName.toLowerCase().includes(myFirstName.toLowerCase())) {
+            console.log('✅ MATCH (SELECTED):', job.job_number, '| Selected:', selectedName, '| Me:', myName)
+            return true
+          }
+        }
+        
+        // Strategy 2: Check for "ASSIGNED BY MANAGEMENT: Name"
+        if (notes.includes('ASSIGNED BY MANAGEMENT:')) {
+          const assignedName = notes.split('ASSIGNED BY MANAGEMENT:')[1]?.split('at')[0]?.trim() || ''
+          if (assignedName.toLowerCase().includes(myName.toLowerCase()) ||
+              assignedName.toLowerCase().includes(myFirstName.toLowerCase())) {
+            console.log('✅ MATCH (ASSIGNED):', job.job_number, '| Assigned:', assignedName, '| Me:', myName)
+            return true
+          }
+        }
+        
+        // Strategy 3: Check for "COMPLETED BY: Name"
+        if (notes.includes('COMPLETED BY:')) {
+          const completedName = notes.split('COMPLETED BY:')[1]?.split('at')[0]?.trim() || ''
+          if (completedName.toLowerCase().includes(myName.toLowerCase()) ||
+              completedName.toLowerCase().includes(myFirstName.toLowerCase())) {
+            console.log('✅ MATCH (COMPLETED):', job.job_number, '| Completed:', completedName, '| Me:', myName)
+            return true
+          }
+        }
+        
+        return false
       })
 
-      console.log('👤 Jobs tab - My jobs:', myJobsOnly.length)
+      console.log('👤 My filtered jobs:', myJobsOnly.length)
       setMyJobs(myJobsOnly)
 
-    } catch (error) { console.error('Error:', error) }
+    } catch (error) { 
+      console.error('❌ Error loading jobs:', error) 
+    }
     finally { setLoading(false) }
   }
 
-  // SELECT JOB - Only one at a time
   const handleSelectJob = async (jobId) => {
     if (!myEmployeeId) { toast.error('Profile not ready'); return }
     if (myJobs.length > 0) { 
@@ -128,7 +192,6 @@ export default function MyJobs() {
     finally { setUpdatingJob(null) }
   }
 
-  // START JOB
   const handleStartJob = async (jobId) => {
     setUpdatingJob(jobId)
     try {
@@ -139,7 +202,6 @@ export default function MyJobs() {
     finally { setUpdatingJob(null) }
   }
 
-  // COMPLETE JOB
   const handleCompleteJob = async (jobId) => {
     if (!window.confirm('Mark as completed?')) return
     setUpdatingJob(jobId)
@@ -179,24 +241,17 @@ export default function MyJobs() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-500 via-blue-600 to-indigo-700 font-['Inter'] pb-20">
-      {/* Header */}
       <div className="px-5 pt-8 pb-5 text-white">
         <h1 className="text-2xl font-bold">Jobs</h1>
         <p className="text-blue-100 text-sm mt-1">{hasActiveJob ? 'You have an active job' : 'Select a job to start working'}</p>
-        
-        {/* Active Job Warning */}
         {hasActiveJob && (
           <div className="mt-3 bg-amber-400/20 border border-amber-400/30 rounded-xl p-3 flex items-center gap-2">
             <Briefcase className="w-5 h-5 text-amber-300 flex-shrink-0" />
-            <div>
-              <p className="text-amber-200 text-sm font-semibold">Active Job: {myJobs[0]?.title}</p>
-              <p className="text-amber-300/70 text-xs">Complete this job before selecting a new one</p>
-            </div>
+            <div><p className="text-amber-200 text-sm font-semibold">Active Job: {myJobs[0]?.title}</p><p className="text-amber-300/70 text-xs">Complete this job before selecting a new one</p></div>
           </div>
         )}
       </div>
 
-      {/* Tabs */}
       <div className="px-5 -mt-2">
         <div className="flex gap-2 bg-white/10 rounded-2xl p-1">
           <button onClick={() => setActiveTab('open')}
@@ -210,7 +265,6 @@ export default function MyJobs() {
         </div>
       </div>
 
-      {/* Search */}
       <div className="px-5 mt-3 mb-3">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/50" />
@@ -219,12 +273,10 @@ export default function MyJobs() {
         </div>
       </div>
 
-      {/* Content */}
       <div className="px-5">
         {loading ? (
           <div className="text-center py-12"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white mx-auto"></div></div>
         ) : activeTab === 'open' ? (
-          /* OPEN POOL */
           filteredOpen.length > 0 ? (
             <div className="space-y-2.5">
               {filteredOpen.map((job, i) => (
@@ -249,7 +301,6 @@ export default function MyJobs() {
             <div className="text-center py-12 bg-white/10 rounded-2xl"><Briefcase className="w-12 h-12 text-white/50 mx-auto mb-2" /><p className="text-white font-semibold">No open jobs available</p></div>
           )
         ) : (
-          /* MY JOBS - Synced with main dashboard */
           filteredMine.length > 0 ? (
             <div className="space-y-2.5">
               {filteredMine.map((job, i) => (
@@ -270,14 +321,12 @@ export default function MyJobs() {
                   </div>
                   <div className="flex items-center gap-2 text-xs text-slate-500 mb-2"><Calendar className="w-3 h-3" /><span>{job.scheduled_date === todayStr ? 'Today' : formatDateShort(job.scheduled_date)}</span><span className="mx-1">·</span><Clock className="w-3 h-3" />{job.scheduled_start_time?.slice(0,5)}-{job.scheduled_end_time?.slice(0,5)}</div>
                   <div className="flex items-center gap-2 text-xs text-slate-500 mb-3"><MapPin className="w-3 h-3" />{job.site_address?.slice(0, 40)}</div>
-                  
                   <div className="flex gap-2 mb-2">
                     <button onClick={() => handleStartJob(job.id)} disabled={updatingJob === job.id}
                       className="flex-1 py-2.5 bg-blue-500 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 active:scale-95 disabled:opacity-50 shadow-sm"><Play className="w-3.5 h-3.5" /> Start Job</button>
                     <button onClick={() => handleCompleteJob(job.id)} disabled={updatingJob === job.id}
                       className="flex-1 py-2.5 bg-emerald-600 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 active:scale-95 disabled:opacity-50 shadow-sm"><CheckCircle2 className="w-3.5 h-3.5" /> Complete</button>
                   </div>
-
                   <div className="grid grid-cols-3 gap-1.5">
                     <button onClick={() => navigate('/mobile/photos')} className="py-2 bg-blue-50 text-blue-700 rounded-lg text-[10px] font-medium flex items-center justify-center gap-1"><Camera className="w-3 h-3" /> Photos</button>
                     <button onClick={() => navigate('/mobile/supplies')} className="py-2 bg-purple-50 text-purple-700 rounded-lg text-[10px] font-medium flex items-center justify-center gap-1"><Package className="w-3 h-3" /> Supplies</button>
@@ -290,7 +339,7 @@ export default function MyJobs() {
             <div className="text-center py-12 bg-white/10 rounded-2xl">
               <User className="w-12 h-12 text-white/50 mx-auto mb-2" />
               <p className="text-white font-semibold">No jobs assigned to you</p>
-              <p className="text-white/50 text-xs mt-1">Select a job from Open Pool or wait for assignment</p>
+              <p className="text-white/50 text-xs mt-1">Select a job from Open Pool or wait for management assignment</p>
             </div>
           )
         )}
