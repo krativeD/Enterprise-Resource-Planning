@@ -45,8 +45,8 @@ export default function MobileHome() {
   }, [])
 
   useEffect(() => {
-    if (myEmployeeId) loadAllJobs()
-  }, [selectedDate, myEmployeeId])
+    if (myCleanerName) loadAllJobs()
+  }, [selectedDate, myCleanerName])
 
   useEffect(() => {
     const hour = currentTime.getHours()
@@ -66,32 +66,71 @@ export default function MobileHome() {
 
   const setupEmployee = async () => {
     try {
-      let { data: emp } = await supabase.from('employees').select('id, first_name, last_name').eq('user_id', user?.id).single()
-      if (emp) { 
-        setMyEmployeeId(emp.id)
-        setMyCleanerName((emp.first_name + ' ' + (emp.last_name || '')).trim())
-        return 
-      }
+      // Try by user_id
+      let { data: emp } = await supabase
+        .from('employees')
+        .select('id, first_name, last_name')
+        .eq('user_id', user?.id)
+        .single()
 
-      const { data: empByEmail } = await supabase.from('employees').select('id, first_name, last_name').eq('email', user?.email).single()
-      if (empByEmail) {
-        await supabase.from('employees').update({ user_id: user?.id }).eq('id', empByEmail.id)
-        setMyEmployeeId(empByEmail.id)
-        setMyCleanerName((empByEmail.first_name + ' ' + (empByEmail.last_name || '')).trim())
+      if (emp) {
+        const name = ((emp.first_name || '') + ' ' + (emp.last_name || '')).trim() || (user?.email?.split('@')[0]) || 'Cleaner'
+        console.log('✅ Found employee by user_id:', name)
+        setMyEmployeeId(emp.id)
+        setMyCleanerName(name)
         return
       }
 
-      const firstName = user?.email?.split('@')[0] || 'Cleaner'
-      const { data: newEmp } = await supabase.from('employees').insert([{
-        user_id: user?.id, first_name: firstName, last_name: '',
-        email: user?.email, employment_status: 'active', department: 'Cleaning'
-      }]).select('id, first_name').single()
+      // Try by email
+      const { data: empByEmail } = await supabase
+        .from('employees')
+        .select('id, first_name, last_name')
+        .eq('email', user?.email)
+        .single()
+
+      if (empByEmail) {
+        await supabase.from('employees').update({ user_id: user?.id }).eq('id', empByEmail.id)
+        const name = ((empByEmail.first_name || '') + ' ' + (empByEmail.last_name || '')).trim() || (user?.email?.split('@')[0]) || 'Cleaner'
+        console.log('✅ Found employee by email:', name)
+        setMyEmployeeId(empByEmail.id)
+        setMyCleanerName(name)
+        return
+      }
+
+      // Create new with safe defaults
+      const firstName = myProfile?.first_name || profile?.full_name?.split(' ')[0] || (user?.email?.split('@')[0]) || 'Cleaner'
+      const lastName = profile?.full_name?.split(' ').slice(1).join(' ') || ''
+      
+      console.log('🆕 Creating employee:', firstName, lastName)
+      
+      const { data: newEmp } = await supabase
+        .from('employees')
+        .insert([{
+          user_id: user?.id,
+          first_name: firstName,
+          last_name: lastName,
+          email: user?.email,
+          employment_status: 'active',
+          department: 'Cleaning'
+        }])
+        .select('id, first_name, last_name')
+        .single()
 
       if (newEmp) {
+        const name = ((newEmp.first_name || '') + ' ' + (newEmp.last_name || '')).trim() || firstName
+        console.log('✅ Created employee:', name)
         setMyEmployeeId(newEmp.id)
-        setMyCleanerName(newEmp.first_name || 'Cleaner')
+        setMyCleanerName(name)
+      } else {
+        const fallbackName = user?.email?.split('@')[0] || 'Cleaner'
+        console.log('⚠️ Could not create employee, using fallback:', fallbackName)
+        setMyCleanerName(fallbackName)
       }
-    } catch (e) { console.error('Setup error:', e) }
+    } catch (e) {
+      console.error('❌ Setup error:', e)
+      const fallbackName = user?.email?.split('@')[0] || 'Cleaner'
+      setMyCleanerName(fallbackName)
+    }
   }
 
   // Check if a job belongs to THIS cleaner
@@ -100,12 +139,23 @@ export default function MobileHome() {
     
     const notes = job.notes.toLowerCase()
     const myName = myCleanerName.toLowerCase()
+    const myFirstName = myCleanerName.split(' ')[0]?.toLowerCase() || ''
     
-    // Check for "SELECTED BY: MyName"
-    if (notes.includes('selected by: ' + myName)) return true
+    // Check for "SELECTED BY: MyName" or "SELECTED BY: FirstName"
+    if (notes.includes('selected by:')) {
+      const selectedPart = notes.split('selected by:')[1]?.split('at')[0]?.trim() || ''
+      if (selectedPart.includes(myName) || (myFirstName && selectedPart.includes(myFirstName))) return true
+    }
     
     // Check for "ASSIGNED BY MANAGEMENT: MyName"
-    if (notes.includes('assigned by management: ' + myName)) return true
+    if (notes.includes('assigned by management:')) {
+      const assignedPart = notes.split('assigned by management:')[1]?.split('at')[0]?.trim() || ''
+      if (assignedPart.includes(myName) || (myFirstName && assignedPart.includes(myFirstName))) return true
+    }
+    
+    // Simple check - does the notes contain my name anywhere?
+    if (notes.includes(myName)) return true
+    if (myFirstName && notes.includes(myFirstName)) return true
     
     return false
   }
@@ -134,15 +184,16 @@ export default function MobileHome() {
         .order('scheduled_date', { ascending: true })
         .order('scheduled_start_time', { ascending: true })
 
-      if (selectedDate !== 'all') {
-        // Filter by date if needed
-      }
-
       // Filter: Only jobs belonging to THIS cleaner
       const myJobsOnly = (allActive || []).filter(job => isMyJob(job))
       
       console.log('👤 Cleaner:', myCleanerName)
-      console.log('👤 My Jobs:', myJobsOnly.length, 'of', allActive?.length, 'total active')
+      console.log('👤 My Jobs:', myJobsOnly.length, 'of', (allActive?.length || 0), 'total active')
+      if (allActive?.length > 0) {
+        allActive.forEach(j => {
+          console.log('  Job:', j.job_number, j.title, '| Notes:', j.notes?.substring(0, 80), '| isMine:', isMyJob(j))
+        })
+      }
       
       setMyActiveJobs(myJobsOnly)
 
@@ -175,7 +226,7 @@ export default function MobileHome() {
 
   // SELECT JOB - Only ONE job at a time
   const handleSelectJob = async (jobId) => {
-    if (!myEmployeeId) { toast.error('Profile not ready. Refresh and try again.'); return }
+    if (!myEmployeeId && !myCleanerName) { toast.error('Profile not ready. Refresh and try again.'); return }
     if (myActiveJobs.length > 0) { 
       toast.error('You already have an active job: ' + myActiveJobs[0].title + '. Complete it first.')
       setActiveTab('mine')
@@ -183,7 +234,7 @@ export default function MobileHome() {
     }
     setUpdatingJob(jobId)
     try {
-      const cleanerName = myCleanerName || myProfile?.first_name || user?.email?.split('@')[0] || 'Cleaner'
+      const cleanerName = myCleanerName || myProfile?.first_name || (user?.email?.split('@')[0]) || 'Cleaner'
       const { error } = await supabase.from('jobs').update({ 
         status: 'in_progress', actual_start_time: new Date().toISOString(), updated_at: new Date().toISOString(),
         notes: 'SELECTED BY: ' + cleanerName + ' at ' + new Date().toLocaleString()
@@ -214,7 +265,7 @@ export default function MobileHome() {
     if (!window.confirm('Mark as completed? You can then select a new job.')) return
     setUpdatingJob(jobId)
     try {
-      const cleanerName = myCleanerName || myProfile?.first_name || user?.email?.split('@')[0] || 'Cleaner'
+      const cleanerName = myCleanerName || myProfile?.first_name || (user?.email?.split('@')[0]) || 'Cleaner'
       const { error } = await supabase.from('jobs').update({ 
         status: 'completed', updated_at: new Date().toISOString(),
         notes: 'COMPLETED BY: ' + cleanerName + ' at ' + new Date().toLocaleString()
@@ -278,7 +329,7 @@ export default function MobileHome() {
           <div className="flex justify-between items-start mb-1">
             <div className="flex-1">
               <p className="text-emerald-100 text-xs opacity-80">{formatDate(currentTime)}</p>
-              <h1 className="text-xl font-bold mt-0.5">{greeting}, {myCleanerName || myProfile?.first_name || user?.email?.split('@')[0] || 'Cleaner'}!</h1>
+              <h1 className="text-xl font-bold mt-0.5">{greeting}, {myCleanerName || myProfile?.first_name || (user?.email?.split('@')[0]) || 'Cleaner'}!</h1>
             </div>
             <div className="flex items-center gap-2">
               <button onClick={handleRefresh} className="p-2 rounded-xl bg-white/20"><RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} /></button>
