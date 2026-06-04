@@ -30,24 +30,17 @@ import {
   Shield,
   Workflow,
   FileCheck,
-  Camera
+  Camera,
+  MapPin
 } from 'lucide-react'
 
 export default function Dashboard() {
   const { user, profile } = useAuthStore()
   const { isDark, toggleTheme } = useThemeStore()
   const navigate = useNavigate()
-  const [activeTab, setActiveTab] = useState('job')
 
   const userName = profile?.full_name || user?.email?.split('@')[0] || 'User'
   const userRole = profile?.role
-
-  const tabs = [
-    { id: 'job', label: 'JOB', icon: '📋', path: '/operations' },
-    { id: 'sales', label: 'Sales', icon: '💰', path: '/sales' },
-    { id: 'field', label: 'Field Operations', icon: '📱', path: '/mobile/field' },
-    { id: 'hr', label: 'Human Resources', icon: '👥', path: '/hr' },
-  ]
 
   // Module definitions with routes and required roles
   const modules = [
@@ -190,14 +183,6 @@ export default function Dashboard() {
     }
   }
 
-  // Handle tab click - navigate to module
-  const handleTabClick = (tab) => {
-    setActiveTab(tab.id)
-    if (tab.path) {
-      navigate(tab.path)
-    }
-  }
-
   return (
     <div className={`min-h-screen font-['Inter'] transition-colors duration-300 ${isDark ? 'dark' : ''}`}>
       {/* Skip to main content */}
@@ -241,32 +226,8 @@ export default function Dashboard() {
       </header>
 
       <main id="main-dashboard" className="max-w-7xl mx-auto px-4 pb-16">
-        {/* Space between header and tabs */}
-        <div className="h-24 md:h-36"></div>
-
-        {/* Tab Navigation - Linked to Modules */}
-        <div className="mb-8">
-          <nav className="overflow-x-auto custom-scrollbar">
-            <div className="flex gap-2 p-2 rounded-2xl w-fit min-w-max neu-inset" role="tablist">
-              {tabs.map((tab) => (
-                <button
-                  key={tab.id}
-                  role="tab"
-                  aria-selected={activeTab === tab.id}
-                  onClick={() => handleTabClick(tab)}
-                  className={`tab-btn px-5 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 cursor-pointer ${
-                    activeTab === tab.id 
-                      ? 'bg-gradient-to-br from-emerald-700 to-emerald-800 text-white shadow-lg' 
-                      : 'text-slate-600 dark:text-slate-300 hover:bg-white/10'
-                  }`}
-                  title={`Go to ${tab.label}`}
-                >
-                  {tab.icon} {tab.label}
-                </button>
-              ))}
-            </div>
-          </nav>
-        </div>
+        {/* Reduced space between header and modules */}
+        <div className="h-8 md:h-12"></div>
 
         {/* Modules Grid */}
         <div className="mb-12">
@@ -335,227 +296,28 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Tab Panels */}
-        <AnimatePresence mode="wait">
-          {/* JOB PANEL */}
-          {activeTab === 'job' && (
-            <motion.section
-              key="job"
+        {/* Quick Access Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+          {[
+            { icon: Briefcase, label: 'Operations', desc: 'Jobs & scheduling', path: '/operations', color: 'from-blue-500 to-blue-600' },
+            { icon: TrendingUp, label: 'Sales', desc: 'Quotes & invoices', path: '/sales', color: 'from-emerald-500 to-emerald-600' },
+            { icon: Smartphone, label: 'Field Ops', desc: 'Monitor cleaners', path: '/mobile/field', color: 'from-purple-500 to-purple-600' },
+            { icon: Users, label: 'HR', desc: 'Staff management', path: '/hr', color: 'from-amber-500 to-amber-600' },
+          ].map((card, i) => (
+            <motion.button
+              key={card.label}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.3 }}
+              transition={{ delay: 0.6 + i * 0.1 }}
+              onClick={() => navigate(card.path)}
+              className={`bg-gradient-to-r ${card.color} text-white rounded-2xl p-5 text-left hover:scale-[1.02] transition-all shadow-lg`}
             >
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="neu-raised p-6 rounded-3xl stat-card">
-                  <h2 className="text-xl font-semibold flex gap-2 items-center text-slate-800 dark:text-white">
-                    <Briefcase className="w-6 h-6 text-emerald-600" />
-                    Active Jobs
-                  </h2>
-                  <p className="text-3xl font-bold mt-3 text-slate-800 dark:text-white">24</p>
-                  <p className="text-sm text-slate-500 dark:text-slate-400">Open work orders</p>
-                  <div className="mt-4 h-2 w-full bg-slate-200 dark:bg-slate-700 rounded-full">
-                    <div className="h-2 w-2/3 bg-emerald-500 rounded-full"></div>
-                  </div>
-                  <p className="text-xs mt-2 text-slate-500 dark:text-slate-400">67% completion rate</p>
-                </div>
-
-                <div className="neu-raised p-6 rounded-3xl stat-card">
-                  <h2 className="text-xl font-semibold flex gap-2 text-slate-800 dark:text-white">
-                    <CheckCircle2 className="w-6 h-6 text-emerald-600" />
-                    Job Categories
-                  </h2>
-                  <p className="text-3xl font-bold mt-2 text-slate-800 dark:text-white">12</p>
-                  <p className="text-sm text-slate-500 dark:text-slate-400">Residential · Commercial · Industrial</p>
-                  <button className="mt-4 w-full py-2 rounded-xl bg-emerald-700 text-white text-sm shadow-md opacity-80 cursor-default">
-                    View Details
-                  </button>
-                </div>
-
-                <div className="neu-raised p-6 rounded-3xl stat-card">
-                  <h2 className="text-xl font-semibold flex gap-2 text-slate-800 dark:text-white">
-                    <Calendar className="w-6 h-6 text-emerald-600" />
-                    Scheduled Jobs
-                  </h2>
-                  <ul className="mt-3 space-y-2 text-sm text-slate-600 dark:text-slate-300">
-                    <li className="flex justify-between">
-                      <span>Office Clean - Main St</span>
-                      <span className="text-emerald-600 dark:text-emerald-400">Today</span>
-                    </li>
-                    <li className="flex justify-between">
-                      <span>Parking Lot Sweep</span>
-                      <span className="text-emerald-600 dark:text-emerald-400">Tomorrow</span>
-                    </li>
-                    <li className="flex justify-between">
-                      <span>Window Washing - Tower B</span>
-                      <span className="text-slate-500 dark:text-slate-400">Jun 15</span>
-                    </li>
-                  </ul>
-                </div>
-              </div>
-            </motion.section>
-          )}
-
-          {/* SALES PANEL */}
-          {activeTab === 'sales' && (
-            <motion.section
-              key="sales"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.3 }}
-            >
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="neu-raised p-6 rounded-3xl stat-card">
-                  <TrendingUp className="w-8 h-8 text-emerald-600 mb-2" />
-                  <p className="text-2xl font-bold mt-2 text-slate-800 dark:text-white">$189,450</p>
-                  <p className="text-slate-500 dark:text-slate-400">Total Sales (YTD)</p>
-                  <button className="mt-4 w-full py-2 rounded-xl bg-emerald-700 text-white text-sm shadow-md opacity-80 cursor-default">
-                    Sales Report
-                  </button>
-                </div>
-
-                <div className="neu-raised p-6 rounded-3xl stat-card">
-                  <Users className="w-8 h-8 text-emerald-600 mb-2" />
-                  <p className="text-2xl font-bold mt-2 text-slate-800 dark:text-white">47</p>
-                  <p className="text-slate-500 dark:text-slate-400">Active Clients</p>
-                  <button className="mt-4 w-full py-2 rounded-xl bg-emerald-700 text-white text-sm shadow-md opacity-80 cursor-default">
-                    CRM
-                  </button>
-                </div>
-
-                <div className="neu-raised p-6 rounded-3xl stat-card">
-                  <DollarSign className="w-8 h-8 text-emerald-600 mb-2" />
-                  <p className="text-2xl font-bold mt-2 text-slate-800 dark:text-white">$32,800</p>
-                  <p className="text-slate-500 dark:text-slate-400">Pending Invoices</p>
-                  <button className="mt-4 w-full py-2 rounded-xl bg-emerald-700 text-white text-sm shadow-md opacity-80 cursor-default">
-                    Follow Up
-                  </button>
-                </div>
-              </div>
-            </motion.section>
-          )}
-
-          {/* FIELD OPERATIONS PANEL */}
-          {activeTab === 'field' && (
-            <motion.section
-              key="field"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.3 }}
-            >
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="neu-raised p-6 rounded-3xl stat-card">
-                  <h2 className="text-xl font-semibold flex gap-2 items-center text-slate-800 dark:text-white">
-                    <Users className="w-6 h-6 text-emerald-600" />
-                    Active Cleaners
-                  </h2>
-                  <p className="text-3xl font-bold mt-3 text-slate-800 dark:text-white">--</p>
-                  <p className="text-sm text-slate-500 dark:text-slate-400">Cleaners working now</p>
-                  <button 
-                    onClick={() => navigate('/mobile/field/cleaners')}
-                    className="mt-4 w-full py-2 rounded-xl bg-emerald-700 text-white text-sm shadow-md hover:bg-emerald-600 transition-colors cursor-pointer"
-                  >
-                    View Active Cleaners
-                  </button>
-                </div>
-
-                <div className="neu-raised p-6 rounded-3xl stat-card">
-                  <h2 className="text-xl font-semibold flex gap-2 text-slate-800 dark:text-white">
-                    <Camera className="w-6 h-6 text-indigo-600" />
-                    Job Photos
-                  </h2>
-                  <p className="text-3xl font-bold mt-2 text-slate-800 dark:text-white">--</p>
-                  <p className="text-sm text-slate-500 dark:text-slate-400">Photos uploaded today</p>
-                  <button 
-                    onClick={() => navigate('/mobile/field/photos')}
-                    className="mt-4 w-full py-2 rounded-xl bg-indigo-700 text-white text-sm shadow-md hover:bg-indigo-600 transition-colors cursor-pointer"
-                  >
-                    View Photos
-                  </button>
-                </div>
-
-                <div className="neu-raised p-6 rounded-3xl stat-card">
-                  <h2 className="text-xl font-semibold flex gap-2 text-slate-800 dark:text-white">
-                    <MapPin className="w-6 h-6 text-blue-600" />
-                    Live Map
-                  </h2>
-                  <p className="text-3xl font-bold mt-2 text-slate-800 dark:text-white">--</p>
-                  <p className="text-sm text-slate-500 dark:text-slate-400">Real-time GPS tracking</p>
-                  <button 
-                    onClick={() => navigate('/mobile/field/map')}
-                    className="mt-4 w-full py-2 rounded-xl bg-blue-700 text-white text-sm shadow-md hover:bg-blue-600 transition-colors cursor-pointer"
-                  >
-                    Open Live Map
-                  </button>
-                </div>
-              </div>
-            </motion.section>
-          )}
-
-          {/* HUMAN RESOURCES PANEL */}
-          {activeTab === 'hr' && (
-            <motion.section
-              key="hr"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.3 }}
-            >
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="neu-raised p-6 rounded-3xl stat-card">
-                  <h2 className="text-xl font-semibold flex gap-2 items-center text-slate-800 dark:text-white">
-                    <Users className="w-6 h-6 text-emerald-600" />
-                    Staff Overview
-                  </h2>
-                  <p className="text-3xl font-bold mt-3 text-slate-800 dark:text-white">28</p>
-                  <p className="text-sm text-slate-500 dark:text-slate-400">Active cleaners + 7 admins</p>
-                  <div className="mt-4 h-2 w-full bg-slate-200 dark:bg-slate-700 rounded-full">
-                    <div className="h-2 w-3/4 bg-emerald-500 rounded-full"></div>
-                  </div>
-                  <p className="text-xs mt-2 text-slate-500 dark:text-slate-400">75% attendance this week</p>
-                </div>
-
-                <div className="neu-raised p-6 rounded-3xl stat-card">
-                  <h2 className="text-xl font-semibold flex gap-2 text-slate-800 dark:text-white">
-                    <CreditCard className="w-6 h-6 text-emerald-600" />
-                    Payroll Summary
-                  </h2>
-                  <p className="text-3xl font-bold mt-2 text-slate-800 dark:text-white">$47,280</p>
-                  <p className="text-sm text-slate-500 dark:text-slate-400">Monthly payroll</p>
-                  <button 
-                    onClick={() => navigate('/payroll')}
-                    className="mt-4 w-full py-2 rounded-xl bg-emerald-700 text-white text-sm shadow-md hover:bg-emerald-600 transition-colors cursor-pointer"
-                  >
-                    Process Payroll
-                  </button>
-                </div>
-
-                <div className="neu-raised p-6 rounded-3xl stat-card">
-                  <h2 className="text-xl font-semibold flex gap-2 text-slate-800 dark:text-white">
-                    <Clock className="w-6 h-6 text-emerald-600" />
-                    Time Tracking
-                  </h2>
-                  <ul className="mt-3 space-y-2 text-sm text-slate-600 dark:text-slate-300">
-                    <li className="flex justify-between">
-                      <span>Sarah K.</span>
-                      <span className="text-emerald-600 dark:text-emerald-400">42 hrs</span>
-                    </li>
-                    <li className="flex justify-between">
-                      <span>Miguel R.</span>
-                      <span className="text-emerald-600 dark:text-emerald-400">38 hrs</span>
-                    </li>
-                    <li className="flex justify-between">
-                      <span>Lisa M.</span>
-                      <span className="text-slate-500 dark:text-slate-400">35 hrs</span>
-                    </li>
-                  </ul>
-                </div>
-              </div>
-            </motion.section>
-          )}
-        </AnimatePresence>
+              <card.icon className="w-8 h-8 mb-3 opacity-80" />
+              <h3 className="font-bold text-lg">{card.label}</h3>
+              <p className="text-sm opacity-75">{card.desc}</p>
+            </motion.button>
+          ))}
+        </div>
       </main>
     </div>
   )
