@@ -1,283 +1,562 @@
-import React, { useState, useEffect } from 'react'
-import { motion } from 'framer-motion'
-import {
-  MdPeople, MdWork, MdAttachMoney, MdTrendingUp,
-  MdWarning, MdCheckCircle, MdNotifications,
-  MdCalendarToday, MdInventory, MdSchedule
-} from 'react-icons/md'
-import {
-  LineChart, Line, BarChart, Bar, PieChart, Pie, Cell,
-  XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
-  AreaChart, Area
-} from 'recharts'
-import StatCard from '../../../components/StatCard'
-import ChartCard from '../../../components/ChartCard'
-import ActivityItem from '../../../components/ActivityItem'
-import { fetchDashboardData, subscribeToDashboardUpdates } from '../../../services/dashboardService'
+import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { motion, AnimatePresence } from 'framer-motion'
+import useAuthStore from '../store/authStore'
+import useThemeStore from '../store/themeStore'
+import Navbar from '../components/Navbar'
+import { USER_ROLES } from '../types/authTypes'
+import toast from 'react-hot-toast'
+import { 
+  Users, 
+  Briefcase, 
+  TrendingUp, 
+  CreditCard, 
+  Package, 
+  ShoppingCart, 
+  Landmark, 
+  Database,
+  Smartphone,
+  FileText,
+  Calendar,
+  FolderOpen,
+  Truck,
+  Clock,
+  DollarSign,
+  BarChart3,
+  CheckCircle2,
+  Sparkles,
+  Sun,
+  Moon,
+  Shield,
+  Workflow,
+  FileCheck,
+  Camera
+} from 'lucide-react'
 
-const Dashboard = () => {
-  const [dashboardData, setDashboardData] = useState(null)
-  const [loading, setLoading] = useState(true)
-  const [selectedPeriod, setSelectedPeriod] = useState('month')
+export default function Dashboard() {
+  const { user, profile } = useAuthStore()
+  const { isDark, toggleTheme } = useThemeStore()
+  const navigate = useNavigate()
+  const [activeTab, setActiveTab] = useState('job')
 
-  useEffect(() => {
-    loadDashboardData()
+  const userName = profile?.full_name || user?.email?.split('@')[0] || 'User'
+  const userRole = profile?.role
+
+  const tabs = [
+    { id: 'job', label: 'JOB', icon: '📋', path: '/operations' },
+    { id: 'sales', label: 'Sales', icon: '💰', path: '/sales' },
+    { id: 'field', label: 'Field Operations', icon: '📱', path: '/mobile/field' },
+    { id: 'hr', label: 'Human Resources', icon: '👥', path: '/hr' },
+  ]
+
+  // Module definitions with routes and required roles
+  const modules = [
+    { 
+      icon: Users, 
+      label: 'Human Resources', 
+      description: 'Staff lifecycle, recruitment',
+      path: '/hr',
+      roles: [USER_ROLES.SUPER_ADMIN, USER_ROLES.HR_MANAGER, USER_ROLES.OPERATIONS_MANAGER]
+    },
+    { 
+      icon: CreditCard, 
+      label: 'Payroll', 
+      description: 'Salary, taxes, compliance',
+      path: '/payroll',
+      roles: [USER_ROLES.SUPER_ADMIN, USER_ROLES.FINANCE_OFFICER, USER_ROLES.HR_MANAGER]
+    },
+    { 
+      icon: TrendingUp, 
+      label: 'CRM & Clients', 
+      description: 'Client management, pipeline',
+      path: '/crm',
+      roles: [USER_ROLES.SUPER_ADMIN, USER_ROLES.OPERATIONS_MANAGER, USER_ROLES.SALES_AGENT]
+    },
+    { 
+      icon: FileText, 
+      label: 'Sales & Quotations', 
+      description: 'Quotes, invoices, A4 PDF',
+      path: '/sales',
+      roles: [USER_ROLES.SUPER_ADMIN, USER_ROLES.OPERATIONS_MANAGER, USER_ROLES.SALES_AGENT, USER_ROLES.FINANCE_OFFICER]
+    },
+    { 
+      icon: Briefcase, 
+      label: 'Operations', 
+      description: 'Job management, scheduling',
+      path: '/operations',
+      roles: [USER_ROLES.SUPER_ADMIN, USER_ROLES.OPERATIONS_MANAGER, USER_ROLES.SUPERVISOR]
+    },
+    { 
+      icon: Package, 
+      label: 'Inventory', 
+      description: 'Stock, supplies, warehouses',
+      path: '/inventory',
+      roles: [USER_ROLES.SUPER_ADMIN, USER_ROLES.OPERATIONS_MANAGER, USER_ROLES.SUPERVISOR]
+    },
+    { 
+      icon: ShoppingCart, 
+      label: 'Procurement', 
+      description: 'Purchase orders, vendors, RFQs',
+      path: '/procurement',
+      roles: [USER_ROLES.SUPER_ADMIN, USER_ROLES.OPERATIONS_MANAGER, USER_ROLES.FINANCE_OFFICER]
+    },
+    { 
+      icon: Landmark, 
+      label: 'Finance', 
+      description: 'Accounting, approvals, budgets',
+      path: '/finance',
+      roles: [USER_ROLES.SUPER_ADMIN, USER_ROLES.FINANCE_OFFICER, USER_ROLES.OPERATIONS_MANAGER]
+    },
+    { 
+      icon: Truck, 
+      label: 'Fleet Management', 
+      description: 'Vehicle tracking, fuel, maintenance',
+      path: '/fleet',
+      roles: [USER_ROLES.SUPER_ADMIN, USER_ROLES.OPERATIONS_MANAGER, USER_ROLES.SUPERVISOR]
+    },
+    { 
+      icon: BarChart3, 
+      label: 'Reporting & Analytics', 
+      description: 'BI dashboards, KPI tracking, export',
+      path: '/reports',
+      roles: [USER_ROLES.SUPER_ADMIN, USER_ROLES.OPERATIONS_MANAGER, USER_ROLES.FINANCE_OFFICER, USER_ROLES.HR_MANAGER]
+    },
+    { 
+      icon: Workflow, 
+      label: 'Workflow Automation', 
+      description: 'Approvals, triggers, business processes',
+      path: '/workflow',
+      roles: [USER_ROLES.SUPER_ADMIN, USER_ROLES.OPERATIONS_MANAGER, USER_ROLES.FINANCE_OFFICER]
+    },
+    { 
+      icon: FolderOpen, 
+      label: 'Document Management', 
+      description: 'Contracts, policies, SOPs, storage',
+      path: '/documents',
+      roles: [USER_ROLES.SUPER_ADMIN, USER_ROLES.OPERATIONS_MANAGER, USER_ROLES.HR_MANAGER]
+    },
+    { 
+      icon: Database, 
+      label: 'Assets Management', 
+      description: 'Asset register, depreciation, maintenance',
+      path: '/assets',
+      roles: [USER_ROLES.SUPER_ADMIN, USER_ROLES.FINANCE_OFFICER, USER_ROLES.OPERATIONS_MANAGER]
+    },
+    { 
+      icon: Smartphone, 
+      label: 'Field Operations', 
+      description: 'Monitor cleaners, photos, incidents, supplies',
+      path: '/mobile/field',
+      roles: [USER_ROLES.SUPER_ADMIN, USER_ROLES.OPERATIONS_MANAGER, USER_ROLES.SUPERVISOR]
+    },
+  ]
+
+  // Check which modules are built and accessible
+  const isModuleBuilt = (module) => {
+    const builtModules = [
+      '/hr', '/payroll', '/crm', '/sales', '/operations', 
+      '/inventory', '/procurement', '/finance', '/fleet', 
+      '/reports', '/workflow', '/documents', '/assets', '/mobile/field'
+    ]
+    return builtModules.includes(module.path)
+  }
+
+  const isModuleAccessible = (module) => {
+    return module.roles.includes(userRole) || userRole === USER_ROLES.SUPER_ADMIN
+  }
+
+  const handleModuleClick = (module) => {
+    const hasAccess = isModuleAccessible(module)
     
-    // Subscribe to realtime updates
-    const unsubscribe = subscribeToDashboardUpdates((type, payload) => {
-      console.log('Realtime update:', type, payload)
-      // Refresh dashboard data on updates
-      loadDashboardData()
-    })
-
-    return () => {
-      unsubscribe()
+    if (!hasAccess) {
+      toast.error(`You don't have access to ${module.label}`)
+      return
     }
-  }, [])
-
-  const loadDashboardData = async () => {
-    try {
-      setLoading(true)
-      const data = await fetchDashboardData()
-      setDashboardData(data)
-    } catch (error) {
-      console.error('Error loading dashboard:', error)
-    } finally {
-      setLoading(false)
+    
+    const availableModules = [
+      '/hr', '/payroll', '/crm', '/sales', '/operations', 
+      '/inventory', '/procurement', '/finance', '/fleet', 
+      '/reports', '/workflow', '/documents', '/assets',
+      '/mobile/field', '/dashboard', '/users'
+    ]
+    
+    if (availableModules.includes(module.path)) {
+      navigate(module.path)
+    } else {
+      toast.success(`${module.label} module coming soon!`, {
+        icon: '🚧',
+        duration: 3000,
+      })
     }
   }
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-96">
-        <div className="flex flex-col items-center space-y-4">
-          <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-          <p className="text-gray-600 font-medium">Loading dashboard...</p>
-        </div>
-      </div>
-    )
+  // Handle tab click - navigate to module
+  const handleTabClick = (tab) => {
+    setActiveTab(tab.id)
+    if (tab.path) {
+      navigate(tab.path)
+    }
   }
-
-  if (!dashboardData) {
-    return (
-      <div className="flex items-center justify-center h-96">
-        <div className="text-center">
-          <MdWarning className="text-6xl text-yellow-500 mx-auto mb-4" />
-          <h3 className="text-xl font-semibold text-gray-800 mb-2">No Data Available</h3>
-          <p className="text-gray-600">Please check your connection and try again</p>
-        </div>
-      </div>
-    )
-  }
-
-  const { stats, revenueData, recentActivities, employeeAttendance } = dashboardData
 
   return (
-    <div className="space-y-8">
-      {/* Page Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <motion.h1 
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="text-3xl font-bold text-gray-800"
-          >
-            Dashboard Overview
-          </motion.h1>
-          <p className="text-gray-500 mt-1">Welcome back, John! Here's what's happening today.</p>
+    <div className={`min-h-screen font-['Inter'] transition-colors duration-300 ${isDark ? 'dark' : ''}`}>
+      {/* Skip to main content */}
+      <a href="#main-dashboard" className="skip-link">Skip to main content</a>
+
+      <Navbar />
+
+      {/* Theme Toggle + ERP Label - Fixed position */}
+      <div className="fixed top-20 right-4 z-30 flex items-center gap-4">
+        <div className="neu-inset px-5 py-2 rounded-full flex items-center gap-2">
+          <Sparkles className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+          <span className="text-sm font-semibold tracking-wide text-emerald-800 dark:text-emerald-200 hidden sm:inline">
+            Enterprise Resource Planning
+          </span>
         </div>
-        
-        <div className="flex items-center space-x-4">
-          <select 
-            value={selectedPeriod}
-            onChange={(e) => setSelectedPeriod(e.target.value)}
-            className="px-4 py-2 rounded-xl border border-gray-200 bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
-          >
-            <option value="week">This Week</option>
-            <option value="month">This Month</option>
-            <option value="quarter">This Quarter</option>
-            <option value="year">This Year</option>
-          </select>
-          
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            className="btn-primary flex items-center space-x-2"
-          >
-            <MdCalendarToday />
-            <span>Generate Report</span>
-          </motion.button>
-        </div>
+        <button 
+          onClick={toggleTheme}
+          className="neu-raised neu-btn w-12 h-12 rounded-2xl flex items-center justify-center hover:scale-110 transition-transform"
+          title={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+        >
+          {isDark ? (
+            <Sun className="w-6 h-6 text-amber-400" />
+          ) : (
+            <Moon className="w-6 h-6 text-slate-600" />
+          )}
+        </button>
       </div>
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        <StatCard
-          icon={MdPeople}
-          title="Total Employees"
-          value={stats.totalEmployees.value}
-          trend={stats.totalEmployees.trend}
-          color="text-blue-600"
-          bgColor="bg-blue-500"
-        />
-        <StatCard
-          icon={MdWork}
-          title="Active Jobs"
-          value={stats.activeJobs.value}
-          trend={stats.activeJobs.trend}
-          color="text-green-600"
-          bgColor="bg-green-500"
-        />
-        <StatCard
-          icon={MdAttachMoney}
-          title="Monthly Revenue"
-          value={`$${stats.monthlyRevenue.value.toLocaleString()}`}
-          trend={stats.monthlyRevenue.trend}
-          color="text-purple-600"
-          bgColor="bg-purple-500"
-        />
-        <StatCard
-          icon={MdWarning}
-          title="Low Stock Alerts"
-          value={stats.lowStockAlerts.value}
-          trend={stats.lowStockAlerts.trend}
-          color="text-red-600"
-          bgColor="bg-red-500"
-        />
-      </div>
-
-      {/* Charts Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Revenue Chart */}
-        <ChartCard title="Revenue Overview" icon={MdTrendingUp}>
-          <div className="h-80">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={revenueData}>
-                <defs>
-                  <linearGradient id="revenueGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.3}/>
-                    <stop offset="95%" stopColor="#3B82F6" stopOpacity={0}/>
-                  </linearGradient>
-                  <linearGradient id="expenseGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#EF4444" stopOpacity={0.3}/>
-                    <stop offset="95%" stopColor="#EF4444" stopOpacity={0}/>
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                <XAxis dataKey="month" stroke="#9CA3AF" />
-                <YAxis stroke="#9CA3AF" />
-                <Tooltip 
-                  contentStyle={{ 
-                    backgroundColor: 'white', 
-                    border: 'none', 
-                    borderRadius: '12px',
-                    boxShadow: '0 10px 40px rgba(0,0,0,0.1)'
-                  }}
-                />
-                <Legend />
-                <Area 
-                  type="monotone" 
-                  dataKey="revenue" 
-                  stroke="#3B82F6" 
-                  fill="url(#revenueGradient)"
-                  strokeWidth={3}
-                />
-                <Area 
-                  type="monotone" 
-                  dataKey="expenses" 
-                  stroke="#EF4444" 
-                  fill="url(#expenseGradient)"
-                  strokeWidth={3}
-                />
-              </AreaChart>
-            </ResponsiveContainer>
+      {/* Header */}
+      <header className="pt-8 pb-4 px-4">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex flex-col items-start">
+            <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-slate-800 dark:text-white">
+              Welcome={userName}
+            </h1>
+            <p className="text-base text-slate-500 dark:text-slate-400 font-medium mt-1">
+              Innovation Without End
+            </p>
           </div>
-        </ChartCard>
+        </div>
+      </header>
 
-        {/* Attendance Chart */}
-        <ChartCard title="Employee Attendance" icon={MdPeople}>
-          <div className="h-80">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={employeeAttendance}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={60}
-                  outerRadius={100}
-                  paddingAngle={5}
-                  dataKey="value"
+      <main id="main-dashboard" className="max-w-7xl mx-auto px-4 pb-16">
+        {/* Space between header and tabs */}
+        <div className="h-24 md:h-36"></div>
+
+        {/* Tab Navigation - Linked to Modules */}
+        <div className="mb-8">
+          <nav className="overflow-x-auto custom-scrollbar">
+            <div className="flex gap-2 p-2 rounded-2xl w-fit min-w-max neu-inset" role="tablist">
+              {tabs.map((tab) => (
+                <button
+                  key={tab.id}
+                  role="tab"
+                  aria-selected={activeTab === tab.id}
+                  onClick={() => handleTabClick(tab)}
+                  className={`tab-btn px-5 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 cursor-pointer ${
+                    activeTab === tab.id 
+                      ? 'bg-gradient-to-br from-emerald-700 to-emerald-800 text-white shadow-lg' 
+                      : 'text-slate-600 dark:text-slate-300 hover:bg-white/10'
+                  }`}
+                  title={`Go to ${tab.label}`}
                 >
-                  {employeeAttendance.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
-                </Pie>
-                <Tooltip />
-                <Legend />
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
-        </ChartCard>
-      </div>
-
-      {/* Bottom Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Recent Activities */}
-        <div className="lg:col-span-2">
-          <ChartCard title="Recent Activities" icon={MdNotifications}>
-            <div className="space-y-2">
-              {recentActivities.map((activity) => (
-                <ActivityItem
-                  key={activity.id}
-                  icon={getActivityIcon(activity.type)}
-                  title={activity.title}
-                  description={activity.description}
-                  time={activity.time}
-                  color={activity.color}
-                />
+                  {tab.icon} {tab.label}
+                </button>
               ))}
             </div>
-          </ChartCard>
+          </nav>
         </div>
 
-        {/* Quick Actions */}
-        <div>
-          <ChartCard title="Quick Actions" icon={MdSchedule}>
-            <div className="space-y-3">
-              <QuickActionButton icon={MdPeople} label="Add Employee" color="bg-blue-500" />
-              <QuickActionButton icon={MdWork} label="Create Job" color="bg-green-500" />
-              <QuickActionButton icon={MdAttachMoney} label="Generate Invoice" color="bg-purple-500" />
-              <QuickActionButton icon={MdInventory} label="Check Inventory" color="bg-orange-500" />
-            </div>
-          </ChartCard>
+        {/* Modules Grid */}
+        <div className="mb-12">
+          <div className="flex items-center gap-2 mb-5">
+            <BarChart3 className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
+            <h2 className="text-xl font-semibold tracking-tight text-slate-700 dark:text-slate-100">
+              Core & Extended Modules
+            </h2>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+            {modules.map((module, index) => {
+              const accessible = isModuleAccessible(module)
+              const built = isModuleBuilt(module)
+              
+              return (
+                <motion.div
+                  key={module.label}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.05 }}
+                  onClick={() => handleModuleClick(module)}
+                  className={`
+                    neu-raised rounded-2xl p-5 transition-all flex items-start gap-3
+                    ${accessible && built 
+                      ? 'cursor-pointer hover:scale-[1.02] hover:shadow-lg' 
+                      : accessible && !built
+                      ? 'cursor-pointer hover:scale-[1.02] opacity-75'
+                      : 'opacity-40 cursor-not-allowed'
+                    }
+                  `}
+                  title={!accessible 
+                    ? 'You do not have access to this module' 
+                    : !built 
+                    ? 'Coming soon!'
+                    : `Go to ${module.label}`
+                  }
+                >
+                  <module.icon className={`w-8 h-8 flex-shrink-0 ${
+                    accessible ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-400'
+                  }`} />
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <h3 className={`font-bold text-lg ${
+                        accessible ? 'text-slate-800 dark:text-white' : 'text-slate-400'
+                      }`}>
+                        {module.label}
+                      </h3>
+                      {built && accessible && (
+                        <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" title="Available"></span>
+                      )}
+                      {!accessible && (
+                        <Shield className="w-4 h-4 text-slate-400" title="Restricted access" />
+                      )}
+                    </div>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{module.description}</p>
+                    {!built && accessible && (
+                      <span className="inline-block mt-2 text-xs px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
+                        Coming Soon
+                      </span>
+                    )}
+                  </div>
+                </motion.div>
+              )
+            })}
+          </div>
         </div>
-      </div>
+
+        {/* Tab Panels */}
+        <AnimatePresence mode="wait">
+          {/* JOB PANEL */}
+          {activeTab === 'job' && (
+            <motion.section
+              key="job"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3 }}
+            >
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="neu-raised p-6 rounded-3xl stat-card">
+                  <h2 className="text-xl font-semibold flex gap-2 items-center text-slate-800 dark:text-white">
+                    <Briefcase className="w-6 h-6 text-emerald-600" />
+                    Active Jobs
+                  </h2>
+                  <p className="text-3xl font-bold mt-3 text-slate-800 dark:text-white">24</p>
+                  <p className="text-sm text-slate-500 dark:text-slate-400">Open work orders</p>
+                  <div className="mt-4 h-2 w-full bg-slate-200 dark:bg-slate-700 rounded-full">
+                    <div className="h-2 w-2/3 bg-emerald-500 rounded-full"></div>
+                  </div>
+                  <p className="text-xs mt-2 text-slate-500 dark:text-slate-400">67% completion rate</p>
+                </div>
+
+                <div className="neu-raised p-6 rounded-3xl stat-card">
+                  <h2 className="text-xl font-semibold flex gap-2 text-slate-800 dark:text-white">
+                    <CheckCircle2 className="w-6 h-6 text-emerald-600" />
+                    Job Categories
+                  </h2>
+                  <p className="text-3xl font-bold mt-2 text-slate-800 dark:text-white">12</p>
+                  <p className="text-sm text-slate-500 dark:text-slate-400">Residential · Commercial · Industrial</p>
+                  <button className="mt-4 w-full py-2 rounded-xl bg-emerald-700 text-white text-sm shadow-md opacity-80 cursor-default">
+                    View Details
+                  </button>
+                </div>
+
+                <div className="neu-raised p-6 rounded-3xl stat-card">
+                  <h2 className="text-xl font-semibold flex gap-2 text-slate-800 dark:text-white">
+                    <Calendar className="w-6 h-6 text-emerald-600" />
+                    Scheduled Jobs
+                  </h2>
+                  <ul className="mt-3 space-y-2 text-sm text-slate-600 dark:text-slate-300">
+                    <li className="flex justify-between">
+                      <span>Office Clean - Main St</span>
+                      <span className="text-emerald-600 dark:text-emerald-400">Today</span>
+                    </li>
+                    <li className="flex justify-between">
+                      <span>Parking Lot Sweep</span>
+                      <span className="text-emerald-600 dark:text-emerald-400">Tomorrow</span>
+                    </li>
+                    <li className="flex justify-between">
+                      <span>Window Washing - Tower B</span>
+                      <span className="text-slate-500 dark:text-slate-400">Jun 15</span>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </motion.section>
+          )}
+
+          {/* SALES PANEL */}
+          {activeTab === 'sales' && (
+            <motion.section
+              key="sales"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3 }}
+            >
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="neu-raised p-6 rounded-3xl stat-card">
+                  <TrendingUp className="w-8 h-8 text-emerald-600 mb-2" />
+                  <p className="text-2xl font-bold mt-2 text-slate-800 dark:text-white">$189,450</p>
+                  <p className="text-slate-500 dark:text-slate-400">Total Sales (YTD)</p>
+                  <button className="mt-4 w-full py-2 rounded-xl bg-emerald-700 text-white text-sm shadow-md opacity-80 cursor-default">
+                    Sales Report
+                  </button>
+                </div>
+
+                <div className="neu-raised p-6 rounded-3xl stat-card">
+                  <Users className="w-8 h-8 text-emerald-600 mb-2" />
+                  <p className="text-2xl font-bold mt-2 text-slate-800 dark:text-white">47</p>
+                  <p className="text-slate-500 dark:text-slate-400">Active Clients</p>
+                  <button className="mt-4 w-full py-2 rounded-xl bg-emerald-700 text-white text-sm shadow-md opacity-80 cursor-default">
+                    CRM
+                  </button>
+                </div>
+
+                <div className="neu-raised p-6 rounded-3xl stat-card">
+                  <DollarSign className="w-8 h-8 text-emerald-600 mb-2" />
+                  <p className="text-2xl font-bold mt-2 text-slate-800 dark:text-white">$32,800</p>
+                  <p className="text-slate-500 dark:text-slate-400">Pending Invoices</p>
+                  <button className="mt-4 w-full py-2 rounded-xl bg-emerald-700 text-white text-sm shadow-md opacity-80 cursor-default">
+                    Follow Up
+                  </button>
+                </div>
+              </div>
+            </motion.section>
+          )}
+
+          {/* FIELD OPERATIONS PANEL */}
+          {activeTab === 'field' && (
+            <motion.section
+              key="field"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3 }}
+            >
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="neu-raised p-6 rounded-3xl stat-card">
+                  <h2 className="text-xl font-semibold flex gap-2 items-center text-slate-800 dark:text-white">
+                    <Users className="w-6 h-6 text-emerald-600" />
+                    Active Cleaners
+                  </h2>
+                  <p className="text-3xl font-bold mt-3 text-slate-800 dark:text-white">--</p>
+                  <p className="text-sm text-slate-500 dark:text-slate-400">Cleaners working now</p>
+                  <button 
+                    onClick={() => navigate('/mobile/field/cleaners')}
+                    className="mt-4 w-full py-2 rounded-xl bg-emerald-700 text-white text-sm shadow-md hover:bg-emerald-600 transition-colors cursor-pointer"
+                  >
+                    View Active Cleaners
+                  </button>
+                </div>
+
+                <div className="neu-raised p-6 rounded-3xl stat-card">
+                  <h2 className="text-xl font-semibold flex gap-2 text-slate-800 dark:text-white">
+                    <Camera className="w-6 h-6 text-indigo-600" />
+                    Job Photos
+                  </h2>
+                  <p className="text-3xl font-bold mt-2 text-slate-800 dark:text-white">--</p>
+                  <p className="text-sm text-slate-500 dark:text-slate-400">Photos uploaded today</p>
+                  <button 
+                    onClick={() => navigate('/mobile/field/photos')}
+                    className="mt-4 w-full py-2 rounded-xl bg-indigo-700 text-white text-sm shadow-md hover:bg-indigo-600 transition-colors cursor-pointer"
+                  >
+                    View Photos
+                  </button>
+                </div>
+
+                <div className="neu-raised p-6 rounded-3xl stat-card">
+                  <h2 className="text-xl font-semibold flex gap-2 text-slate-800 dark:text-white">
+                    <MapPin className="w-6 h-6 text-blue-600" />
+                    Live Map
+                  </h2>
+                  <p className="text-3xl font-bold mt-2 text-slate-800 dark:text-white">--</p>
+                  <p className="text-sm text-slate-500 dark:text-slate-400">Real-time GPS tracking</p>
+                  <button 
+                    onClick={() => navigate('/mobile/field/map')}
+                    className="mt-4 w-full py-2 rounded-xl bg-blue-700 text-white text-sm shadow-md hover:bg-blue-600 transition-colors cursor-pointer"
+                  >
+                    Open Live Map
+                  </button>
+                </div>
+              </div>
+            </motion.section>
+          )}
+
+          {/* HUMAN RESOURCES PANEL */}
+          {activeTab === 'hr' && (
+            <motion.section
+              key="hr"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3 }}
+            >
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="neu-raised p-6 rounded-3xl stat-card">
+                  <h2 className="text-xl font-semibold flex gap-2 items-center text-slate-800 dark:text-white">
+                    <Users className="w-6 h-6 text-emerald-600" />
+                    Staff Overview
+                  </h2>
+                  <p className="text-3xl font-bold mt-3 text-slate-800 dark:text-white">28</p>
+                  <p className="text-sm text-slate-500 dark:text-slate-400">Active cleaners + 7 admins</p>
+                  <div className="mt-4 h-2 w-full bg-slate-200 dark:bg-slate-700 rounded-full">
+                    <div className="h-2 w-3/4 bg-emerald-500 rounded-full"></div>
+                  </div>
+                  <p className="text-xs mt-2 text-slate-500 dark:text-slate-400">75% attendance this week</p>
+                </div>
+
+                <div className="neu-raised p-6 rounded-3xl stat-card">
+                  <h2 className="text-xl font-semibold flex gap-2 text-slate-800 dark:text-white">
+                    <CreditCard className="w-6 h-6 text-emerald-600" />
+                    Payroll Summary
+                  </h2>
+                  <p className="text-3xl font-bold mt-2 text-slate-800 dark:text-white">$47,280</p>
+                  <p className="text-sm text-slate-500 dark:text-slate-400">Monthly payroll</p>
+                  <button 
+                    onClick={() => navigate('/payroll')}
+                    className="mt-4 w-full py-2 rounded-xl bg-emerald-700 text-white text-sm shadow-md hover:bg-emerald-600 transition-colors cursor-pointer"
+                  >
+                    Process Payroll
+                  </button>
+                </div>
+
+                <div className="neu-raised p-6 rounded-3xl stat-card">
+                  <h2 className="text-xl font-semibold flex gap-2 text-slate-800 dark:text-white">
+                    <Clock className="w-6 h-6 text-emerald-600" />
+                    Time Tracking
+                  </h2>
+                  <ul className="mt-3 space-y-2 text-sm text-slate-600 dark:text-slate-300">
+                    <li className="flex justify-between">
+                      <span>Sarah K.</span>
+                      <span className="text-emerald-600 dark:text-emerald-400">42 hrs</span>
+                    </li>
+                    <li className="flex justify-between">
+                      <span>Miguel R.</span>
+                      <span className="text-emerald-600 dark:text-emerald-400">38 hrs</span>
+                    </li>
+                    <li className="flex justify-between">
+                      <span>Lisa M.</span>
+                      <span className="text-slate-500 dark:text-slate-400">35 hrs</span>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </motion.section>
+          )}
+        </AnimatePresence>
+      </main>
     </div>
   )
 }
-
-// Helper Components
-const getActivityIcon = (type) => {
-  const icons = {
-    job: MdWork,
-    employee: MdPeople,
-    invoice: MdAttachMoney,
-    alert: MdWarning,
-  }
-  return icons[type] || MdNotifications
-}
-
-const QuickActionButton = ({ icon: Icon, label, color }) => (
-  <motion.button
-    whileHover={{ scale: 1.02, x: 5 }}
-    whileTap={{ scale: 0.98 }}
-    className="w-full flex items-center space-x-3 p-4 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors"
-  >
-    <div className={`w-10 h-10 rounded-lg ${color} flex items-center justify-center`}>
-      <Icon className="text-white text-lg" />
-    </div>
-    <span className="font-medium text-gray-700">{label}</span>
-  </motion.button>
-)
-
-export default Dashboard
